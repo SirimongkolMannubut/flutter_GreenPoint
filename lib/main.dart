@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'providers/user_provider.dart';
 import 'providers/waste_provider.dart';
 import 'screens/main_screen.dart';
@@ -9,6 +10,8 @@ import 'constants/app_constants.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  await initializeDateFormatting('th', null);
   
   try {
     await dotenv.load(fileName: ".env");
