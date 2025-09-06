@@ -3,7 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'providers/user_provider.dart';
-import 'screens/home_screen.dart';
+import 'providers/waste_provider.dart';
+import 'screens/main_screen.dart';
 import 'constants/app_constants.dart';
 
 void main() async {
@@ -26,6 +27,7 @@ class GreenPointApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => UserProvider()..loadUser()),
+        ChangeNotifierProvider(create: (_) => WasteProvider()..loadEntries()),
       ],
       child: MaterialApp(
         title: AppConstants.appName,
@@ -48,10 +50,10 @@ class GreenPointApp extends StatelessWidget {
               color: Colors.white,
             ),
           ),
-          cardTheme: CardTheme(
+          cardTheme: const CardThemeData(
             elevation: 4,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppConstants.defaultRadius),
+              borderRadius: BorderRadius.all(Radius.circular(12.0)),
             ),
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
@@ -68,7 +70,7 @@ class GreenPointApp extends StatelessWidget {
             ),
           ),
         ),
-        home: const HomeScreen(),
+        home: const MainScreen(),
       ),
     );
   }

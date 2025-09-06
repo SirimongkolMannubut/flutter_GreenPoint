@@ -79,6 +79,31 @@ class StorageService {
     }
   }
 
+  static Future<List<Map<String, dynamic>>> getWasteEntries() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final wasteData = prefs.getString('waste_entries');
+      if (wasteData != null) {
+        final List<dynamic> decoded = json.decode(wasteData);
+        return decoded.cast<Map<String, dynamic>>();
+      }
+    } catch (e) {
+      print('Error getting waste entries: $e');
+    }
+    return [];
+  }
+
+  static Future<bool> saveWasteEntries(List<Map<String, dynamic>> entries) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final entriesJson = json.encode(entries);
+      return await prefs.setString('waste_entries', entriesJson);
+    } catch (e) {
+      print('Error saving waste entries: $e');
+      return false;
+    }
+  }
+
   static Future<bool> clearAll() async {
     try {
       final prefs = await SharedPreferences.getInstance();
