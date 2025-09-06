@@ -1,16 +1,21 @@
-# flutter_greenpoint
+# GreenPoint
 
-A new Flutter project.
+แอปสะสมแต้มเพื่อรณรงค์ลดการใช้พลาสติกในงานแฟร์และงานชุมชนของจังหวัด
 
-## Getting Started
+## คุณสมบัติ
 
-This project is a starting point for a Flutter application.
+- สะสมแต้มจากการลดการใช้พลาสติก
+- ติดตามจำนวนพลาสติกที่ลดได้
+- กิจกรรมต่างๆ เพื่อรณรงค์สิ่งแวดล้อม
+- ระบบแต้มสะสมสำหรับแลกของรางวัล
 
-A few resources to get you started if this is your first Flutter project:
+## การใช้งาน
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+1. เลือกกิจกรรมลดการใช้พลาสติก
+2. รับแต้มสะสมจากการทำกิจกรรม
+3. ติดตามความคืบหน้าการลดพลาสติก
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Branch
+
+- `main`: Production branch
+- `dev`: Development branch

@@ -1,39 +1,40 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const GreenPointApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class GreenPointApp extends StatelessWidget {
+  const GreenPointApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'GreenPoint',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+        useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const HomePage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _HomePageState extends State<HomePage> {
+  int _points = 0;
+  int _plasticReduced = 0;
 
-  void _incrementCounter() {
+  void _addPoints(int points, int plastic) {
     setState(() {
-      _counter++;
+      _points += points;
+      _plasticReduced += plastic;
     });
   }
 
@@ -41,25 +42,69 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
+        backgroundColor: Colors.green,
+        foregroundColor: Colors.white,
+        title: const Text('GreenPoint'),
+        centerTitle: true,
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+          children: [
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  children: [
+                    const Icon(Icons.eco, size: 50, color: Colors.green),
+                    const SizedBox(height: 10),
+                    Text('แต้มสะสม', style: Theme.of(context).textTheme.titleLarge),
+                    Text('$_points แต้ม', style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: Colors.green, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 10),
+                    Text('ลดพลาสติก $_plasticReduced ชิ้น', style: Theme.of(context).textTheme.bodyLarge),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text('กิจกรรมลดพลาสติก', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            Expanded(
+              child: GridView.count(
+                crossAxisCount: 2,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+                children: [
+                  _buildActivityCard('ใช้ถุงผ้า', Icons.shopping_bag, 10, 1),
+                  _buildActivityCard('ใช้กล่องอาหาร', Icons.lunch_dining, 15, 1),
+                  _buildActivityCard('ใช้หลอดไผ่', Icons.local_drink, 5, 1),
+                  _buildActivityCard('ไม่ใช้ถุงพลาสติก', Icons.no_luggage, 20, 2),
+                ],
+              ),
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+    );
+  }
+
+  Widget _buildActivityCard(String title, IconData icon, int points, int plastic) {
+    return Card(
+      child: InkWell(
+        onTap: () => _addPoints(points, plastic),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 40, color: Colors.green),
+              const SizedBox(height: 8),
+              Text(title, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              Text('+$points แต้ม', style: const TextStyle(color: Colors.green)),
+            ],
+          ),
+        ),
       ),
     );
   }
