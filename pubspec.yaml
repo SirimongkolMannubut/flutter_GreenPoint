@@ -1,5 +1,5 @@
 name: flutter_greenpoint
-description: "A new Flutter project."
+description: "GreenPoint - แอปสะสมแต้มเพื่อรณรงค์ลดการใช้พลาสติก"
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -11,6 +11,19 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
+  shared_preferences: ^2.2.2
+  provider: ^6.1.1
+  http: ^1.1.2
+  flutter_dotenv: ^5.1.0
+  intl: ^0.19.0
+  flutter_animate: ^4.5.0
+  lottie: ^3.0.0
+  google_fonts: ^6.1.0
+  fl_chart: ^0.66.2
+  qr_flutter: ^4.1.0
+  image_picker: ^1.0.7
+  geolocator: ^10.1.0
+  permission_handler: ^11.2.0
 
 dev_dependencies:
   flutter_test:
@@ -19,3 +32,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/
+    - assets/images/
+    - assets/animations/
+    - .env
