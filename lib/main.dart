@@ -5,6 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'providers/user_provider.dart';
 import 'providers/waste_provider.dart';
+import 'screens/auth_screen.dart';
 import 'screens/main_screen.dart';
 import 'constants/app_constants.dart';
 
@@ -73,7 +74,20 @@ class GreenPointApp extends StatelessWidget {
             ),
           ),
         ),
-        home: const MainScreen(),
+        home: Consumer<UserProvider>(
+          builder: (context, userProvider, child) {
+            if (userProvider.isLoading) {
+              return const Scaffold(
+                body: Center(
+                  child: CircularProgressIndicator(
+                    color: AppConstants.primaryGreen,
+                  ),
+                ),
+              );
+            }
+            return userProvider.isLoggedIn ? const MainScreen() : const AuthScreen();
+          },
+        ),
       ),
     );
   }

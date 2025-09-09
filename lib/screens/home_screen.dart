@@ -178,14 +178,14 @@ class HomeScreen extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _buildShortcutItem('Scan QR', Icons.qr_code_scanner, () {}),
-        _buildShortcutItem('ร้านค้า', Icons.store, () {}),
-        _buildShortcutItem('แลกของ', Icons.card_giftcard, () {}),
+        _buildShortcutItem('Scan QR', Icons.qr_code_scanner, () {}, '📱'),
+        _buildShortcutItem('ร้านค้า', Icons.store, () {}, '🏦'),
+        _buildShortcutItem('แลกของ', Icons.card_giftcard, () {}, '🎁'),
       ],
     ).animate().fadeIn(duration: 600.ms, delay: 200.ms);
   }
 
-  Widget _buildShortcutItem(String title, IconData icon, VoidCallback onTap) {
+  Widget _buildShortcutItem(String title, IconData icon, VoidCallback onTap, String emoji) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -204,7 +204,7 @@ class HomeScreen extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Icon(icon, size: 32, color: AppConstants.primaryGreen),
+            Text(emoji, style: const TextStyle(fontSize: 32)),
             const SizedBox(height: 8),
             Text(
               title,

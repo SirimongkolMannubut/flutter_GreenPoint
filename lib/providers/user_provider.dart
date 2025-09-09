@@ -25,18 +25,6 @@ class UserProvider with ChangeNotifier {
       final userData = await StorageService.getUser();
       if (userData != null) {
         _user = User.fromJson(userData);
-      } else {
-        _user = User(
-          id: 'user_001',
-          name: 'ผู้ใช้งาน',
-          email: 'user@greenpoint.com',
-          totalPoints: 0,
-          plasticReduced: 0,
-          level: 1,
-          joinDate: DateTime.now(),
-          achievements: [],
-        );
-        await saveUser();
       }
     } catch (e) {
       debugPrint('Error loading user: $e');
@@ -44,6 +32,55 @@ class UserProvider with ChangeNotifier {
       setLoading(false);
     }
   }
+
+  Future<void> login(String email) async {
+    setLoading(true);
+    try {
+      final userData = await StorageService.getUser();
+      if (userData != null && userData['email'] == email) {
+        _user = User.fromJson(userData);
+      } else {
+        _user = User(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          name: 'ผู้ใช้งาน',
+          email: email,
+          totalPoints: 0,
+          plasticReduced: 0,
+          level: 1,
+          joinDate: DateTime.now(),
+          achievements: [],
+        );
+      }
+      await saveUser();
+    } catch (e) {
+      debugPrint('Error logging in: $e');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  Future<void> register(String name, String email) async {
+    setLoading(true);
+    try {
+      _user = User(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        name: name,
+        email: email,
+        totalPoints: 0,
+        plasticReduced: 0,
+        level: 1,
+        joinDate: DateTime.now(),
+        achievements: [],
+      );
+      await saveUser();
+    } catch (e) {
+      debugPrint('Error registering: $e');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  bool get isLoggedIn => _user != null;
 
   Future<void> saveUser() async {
     if (_user != null) {
@@ -106,5 +143,46 @@ class UserProvider with ChangeNotifier {
     final nextThreshold = thresholds[currentLevel];
     
     return (currentPoints - currentThreshold) / (nextThreshold - currentThreshold);
+  }
+
+  Future<void> logout() async {
+    _user = null;
+    await StorageService.clearAll();
+    notifyListeners();
+  }
+
+  List<Map<String, dynamic>> getActivityHistory() {
+    return [
+      {
+        'date': DateTime.now().subtract(const Duration(days: 1)),
+        'activity': 'ใช้ถุงผ้า',
+        'points': 10,
+        'icon': '🛍️',
+      },
+      {
+        'date': DateTime.now().subtract(const Duration(days: 2)),
+        'activity': 'ใช้กล่องอาหาร',
+        'points': 15,
+        'icon': '🍱',
+      },
+      {
+        'date': DateTime.now().subtract(const Duration(days: 3)),
+        'activity': 'ใช้หลอดไผ่',
+        'points': 8,
+        'icon': '🥤',
+      },
+      {
+        'date': DateTime.now().subtract(const Duration(days: 4)),
+        'activity': 'ไม่ใช้ถุงพลาสติก',
+        'points': 20,
+        'icon': '🚫',
+      },
+      {
+        'date': DateTime.now().subtract(const Duration(days: 5)),
+        'activity': 'ใช้ขวดน้ำส่วนตัว',
+        'points': 12,
+        'icon': '💧',
+      },
+    ];
   }
 }
