@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/user_provider.dart';
 import '../constants/app_constants.dart';
+import '../widgets/common_app_bar.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -12,6 +13,15 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
+      appBar: CommonAppBar(
+        title: 'หน้าหลัก',
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+            onPressed: () {},
+          ),
+        ],
+      ),
       body: Consumer<UserProvider>(
         builder: (context, userProvider, child) {
           if (userProvider.isLoading) {
@@ -22,69 +32,26 @@ class HomeScreen extends StatelessWidget {
             );
           }
 
-          return CustomScrollView(
-            slivers: [
-              _buildHeader(),
-              SliverPadding(
-                padding: const EdgeInsets.all(16),
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate([
-                    _buildProfileCard(userProvider),
-                    const SizedBox(height: 20),
-                    _buildShortcutMenu(),
-                    const SizedBox(height: 20),
-                    _buildPromotionBanner(),
-                    const SizedBox(height: 20),
-                    _buildCollectionCards(),
-                  ]),
-                ),
-              ),
-            ],
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                _buildProfileCard(userProvider),
+                const SizedBox(height: 20),
+                _buildShortcutMenu(),
+                const SizedBox(height: 20),
+                _buildPromotionBanner(),
+                const SizedBox(height: 20),
+                _buildCollectionCards(),
+              ],
+            ),
           );
         },
       ),
     );
   }
 
-  Widget _buildHeader() {
-    return SliverAppBar(
-      expandedHeight: 100,
-      floating: false,
-      pinned: true,
-      backgroundColor: AppConstants.primaryGreen,
-      flexibleSpace: FlexibleSpaceBar(
-        background: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [AppConstants.primaryGreen, AppConstants.lightGreen],
-            ),
-          ),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'GreenPoint',
-                    style: GoogleFonts.kanit(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.notifications_outlined, color: Colors.white, size: 28),
-                    onPressed: () {},
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+
 
   Widget _buildProfileCard(UserProvider userProvider) {
     return Container(
@@ -179,7 +146,7 @@ class HomeScreen extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         _buildShortcutItem('Scan QR', Icons.qr_code_scanner, () {}, '📱'),
-        _buildShortcutItem('ร้านค้า', Icons.store, () {}, '🏦'),
+        _buildShortcutItem('ร้านค้า', Icons.store, () {}, '🏪'),
         _buildShortcutItem('แลกของ', Icons.card_giftcard, () {}, '🎁'),
       ],
     ).animate().fadeIn(duration: 600.ms, delay: 200.ms);

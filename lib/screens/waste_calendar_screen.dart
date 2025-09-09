@@ -7,6 +7,7 @@ import '../providers/waste_provider.dart';
 import '../models/waste_entry.dart';
 import '../constants/app_constants.dart';
 import '../widgets/waste_entry_card.dart';
+import '../widgets/common_app_bar.dart';
 import 'add_waste_screen.dart';
 
 class WasteCalendarScreen extends StatefulWidget {
@@ -32,13 +33,8 @@ class _WasteCalendarScreenState extends State<WasteCalendarScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: Text(
-          'ปฏิทินทิ้งขยะ',
-          style: GoogleFonts.kanit(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: AppConstants.primaryGreen,
-        foregroundColor: Colors.white,
+      appBar: CommonAppBar(
+        title: 'ปฏิทินทิ้งขยะ',
         actions: [
           IconButton(
             icon: const Icon(Icons.today),

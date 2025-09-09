@@ -6,6 +6,7 @@ import '../constants/app_constants.dart';
 import '../providers/user_provider.dart';
 import '../providers/store_provider.dart';
 import '../models/partner_store.dart';
+import '../widgets/common_app_bar.dart';
 import 'home_screen.dart';
 import 'waste_calendar_screen.dart';
 import 'auth_screen.dart';
@@ -100,113 +101,68 @@ class _PartnerStoreScreenState extends State<PartnerStoreScreen> with TickerProv
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) {
-          return [
-            _buildSliverAppBar(),
-            _buildSearchAndFilter(),
-          ];
-        },
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildStoreList(),
-            _buildMapView(),
-          ],
-        ),
+      appBar: CommonAppBar(
+        title: 'ร้านค้าพาร์ทเนอร์',
+      ),
+      body: Column(
+        children: [
+          _buildTabBar(),
+          _buildSearchAndFilter(),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildStoreList(),
+                _buildMapView(),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildSliverAppBar() {
-    return SliverAppBar(
-      expandedHeight: 160,
-      floating: false,
-      pinned: true,
-      backgroundColor: AppConstants.primaryGreen,
-      flexibleSpace: FlexibleSpaceBar(
-        titlePadding: const EdgeInsets.only(left: 16, bottom: 60),
-        title: Text(
-          'ร้านค้าพาร์ทเนอร์',
-          style: GoogleFonts.kanit(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-            fontSize: 18,
-          ),
+  Widget _buildTabBar() {
+    return Container(
+      color: AppConstants.primaryGreen,
+      child: TabBar(
+        controller: _tabController,
+        indicatorColor: Colors.white,
+        indicatorWeight: 3,
+        labelColor: Colors.white,
+        unselectedLabelColor: Colors.white60,
+        labelStyle: GoogleFonts.kanit(
+          fontWeight: FontWeight.bold,
+          fontSize: 14,
         ),
-        background: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [AppConstants.primaryGreen, AppConstants.lightGreen],
-            ),
-          ),
-          child: SafeArea(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text('🏦', style: TextStyle(fontSize: 50)),
-                const SizedBox(height: 8),
-                Text(
-                  'ร้านค้าที่เข้าร่วมโครงการ',
-                  style: GoogleFonts.kanit(
-                    fontSize: 14,
-                    color: Colors.white70,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
+        unselectedLabelStyle: GoogleFonts.kanit(
+          fontWeight: FontWeight.w500,
+          fontSize: 14,
         ),
-      ),
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(48),
-        child: Container(
-          color: AppConstants.primaryGreen,
-          child: TabBar(
-            controller: _tabController,
-            indicatorColor: Colors.white,
-            indicatorWeight: 3,
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white60,
-            labelStyle: GoogleFonts.kanit(
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            ),
-            unselectedLabelStyle: GoogleFonts.kanit(
-              fontWeight: FontWeight.w500,
-              fontSize: 14,
-            ),
-            tabs: const [
-              Tab(
-                icon: Icon(Icons.store, size: 20),
-                text: 'รายชื่อร้าน',
-              ),
-              Tab(
-                icon: Icon(Icons.map_outlined, size: 20),
-                text: 'แผนที่ร้าน',
-              ),
-            ],
+        tabs: const [
+          Tab(
+            icon: Icon(Icons.store, size: 20),
+            text: 'รายชื่อร้าน',
           ),
-        ),
+          Tab(
+            icon: Icon(Icons.map_outlined, size: 20),
+            text: 'แผนที่ร้าน',
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildSearchAndFilter() {
-    return SliverToBoxAdapter(
-      child: Container(
-        color: Colors.white,
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            _buildSearchBar(),
-            const SizedBox(height: 12),
-            _buildCategoryFilter(),
-          ],
-        ),
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          _buildSearchBar(),
+          const SizedBox(height: 12),
+          _buildCategoryFilter(),
+        ],
       ),
     );
   }
@@ -874,13 +830,8 @@ class RewardsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: Text(
-          'Rewards',
-          style: GoogleFonts.kanit(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: AppConstants.primaryGreen,
-        foregroundColor: Colors.white,
+      appBar: const CommonAppBar(
+        title: 'ของรางวัล',
       ),
       body: Consumer<UserProvider>(
         builder: (context, userProvider, child) {
@@ -1013,6 +964,9 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
+      appBar: const CommonAppBar(
+        title: 'โปรไฟล์',
+      ),
       body: Consumer<UserProvider>(
         builder: (context, userProvider, child) {
           if (!userProvider.isLoggedIn) {
@@ -1021,86 +975,74 @@ class ProfileScreen extends StatelessWidget {
             );
           }
 
-          return CustomScrollView(
-            slivers: [
-              _buildProfileHeader(userProvider),
-              SliverPadding(
-                padding: const EdgeInsets.all(16),
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate([
-                    _buildStatsCards(userProvider),
-                    const SizedBox(height: 20),
-                    _buildLevelCard(userProvider),
-                    const SizedBox(height: 20),
-                    _buildHistorySection(userProvider),
-                    const SizedBox(height: 20),
-                    _buildLogoutButton(context, userProvider),
-                  ]),
-                ),
-              ),
-            ],
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                _buildProfileCard(userProvider),
+                const SizedBox(height: 20),
+                _buildStatsCards(userProvider),
+                const SizedBox(height: 20),
+                _buildLevelCard(userProvider),
+                const SizedBox(height: 20),
+                _buildHistorySection(userProvider),
+                const SizedBox(height: 20),
+                _buildLogoutButton(context, userProvider),
+              ],
+            ),
           );
         },
       ),
     );
   }
 
-  Widget _buildProfileHeader(UserProvider userProvider) {
-    return SliverAppBar(
-      expandedHeight: 200,
-      floating: false,
-      pinned: true,
-      backgroundColor: AppConstants.primaryGreen,
-      flexibleSpace: FlexibleSpaceBar(
-        background: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [AppConstants.primaryGreen, AppConstants.lightGreen],
-            ),
-          ),
-          child: SafeArea(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(height: 40),
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  child: const Center(
-                    child: Text('👤', style: TextStyle(fontSize: 40)),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  userProvider.user?.name ?? 'ผู้ใช้งาน',
-                  style: GoogleFonts.kanit(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                Text(
-                  userProvider.user?.email ?? '',
-                  style: GoogleFonts.kanit(
-                    fontSize: 14,
-                    color: Colors.white70,
-                  ),
+  Widget _buildProfileCard(UserProvider userProvider) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [AppConstants.primaryGreen, AppConstants.lightGreen],
+        ),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
                 ),
               ],
             ),
+            child: const Center(
+              child: Text('👤', style: TextStyle(fontSize: 40)),
+            ),
           ),
-        ),
+          const SizedBox(height: 16),
+          Text(
+            userProvider.user?.name ?? 'ผู้ใช้งาน',
+            style: GoogleFonts.kanit(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            userProvider.user?.email ?? '',
+            style: GoogleFonts.kanit(
+              fontSize: 14,
+              color: Colors.white70,
+            ),
+          ),
+        ],
       ),
     );
   }
