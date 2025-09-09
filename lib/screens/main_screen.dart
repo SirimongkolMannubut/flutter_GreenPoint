@@ -120,42 +120,77 @@ class _PartnerStoreScreenState extends State<PartnerStoreScreen> with TickerProv
 
   Widget _buildSliverAppBar() {
     return SliverAppBar(
-      expandedHeight: 120,
+      expandedHeight: 160,
       floating: false,
       pinned: true,
       backgroundColor: AppConstants.primaryGreen,
       flexibleSpace: FlexibleSpaceBar(
+        titlePadding: const EdgeInsets.only(left: 16, bottom: 60),
         title: Text(
-          'Partner Store',
+          'ร้านค้าพาร์ทเนอร์',
           style: GoogleFonts.kanit(
             fontWeight: FontWeight.bold,
             color: Colors.white,
+            fontSize: 18,
           ),
         ),
         background: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
               colors: [AppConstants.primaryGreen, AppConstants.lightGreen],
             ),
           ),
-          child: const Center(
-            child: Text(
-              '🏦',
-              style: TextStyle(fontSize: 60),
+          child: SafeArea(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text('🏦', style: TextStyle(fontSize: 50)),
+                const SizedBox(height: 8),
+                Text(
+                  'ร้านค้าที่เข้าร่วมโครงการ',
+                  style: GoogleFonts.kanit(
+                    fontSize: 14,
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
       ),
-      bottom: TabBar(
-        controller: _tabController,
-        indicatorColor: Colors.white,
-        labelColor: Colors.white,
-        unselectedLabelColor: Colors.white70,
-        labelStyle: GoogleFonts.kanit(fontWeight: FontWeight.bold),
-        tabs: const [
-          Tab(icon: Icon(Icons.list), text: 'รายชื่อร้าน'),
-          Tab(icon: Icon(Icons.map), text: 'แผนที่'),
-        ],
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(48),
+        child: Container(
+          color: AppConstants.primaryGreen,
+          child: TabBar(
+            controller: _tabController,
+            indicatorColor: Colors.white,
+            indicatorWeight: 3,
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white60,
+            labelStyle: GoogleFonts.kanit(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+            unselectedLabelStyle: GoogleFonts.kanit(
+              fontWeight: FontWeight.w500,
+              fontSize: 14,
+            ),
+            tabs: const [
+              Tab(
+                icon: Icon(Icons.store, size: 20),
+                text: 'รายชื่อร้าน',
+              ),
+              Tab(
+                icon: Icon(Icons.map_outlined, size: 20),
+                text: 'แผนที่ร้าน',
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -449,20 +484,27 @@ class _PartnerStoreScreenState extends State<PartnerStoreScreen> with TickerProv
           child: Column(
             children: [
               Container(
-                height: 300,
+                height: 250,
                 decoration: BoxDecoration(
-                  color: Colors.grey[200],
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppConstants.primaryGreen.withOpacity(0.1),
+                      AppConstants.lightGreen.withOpacity(0.1),
+                    ],
+                  ),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey[300]!),
+                  border: Border.all(color: AppConstants.primaryGreen.withOpacity(0.2)),
                 ),
                 child: Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('🗺️', style: const TextStyle(fontSize: 64)),
-                      const SizedBox(height: 16),
+                      Text('🗺️', style: const TextStyle(fontSize: 48)),
+                      const SizedBox(height: 12),
                       Text(
-                        'แผนที่ร้านค้าพาร์ทเนอร์',
+                        'แผนที่ตั้งร้านค้าพาร์ทเนอร์',
                         style: GoogleFonts.kanit(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -471,24 +513,61 @@ class _PartnerStoreScreenState extends State<PartnerStoreScreen> with TickerProv
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'กำลังพัฒนาแผนที่แบบอินเตอร์แอคทีฟ',
+                        'ร้านค้าที่เข้าร่วมโครงการ GreenPoint',
                         style: GoogleFonts.kanit(
                           fontSize: 14,
                           color: Colors.grey[600],
                         ),
                         textAlign: TextAlign.center,
                       ),
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: AppConstants.primaryGreen,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          'ทั้งหมด ${storeProvider.stores.length} ร้าน',
+                          style: GoogleFonts.kanit(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ),
               const SizedBox(height: 16),
+              Row(
+                children: [
+                  Text(
+                    'รายชื่อร้านทั้งหมด',
+                    style: GoogleFonts.kanit(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppConstants.darkGreen,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    '${storeProvider.stores.length} ร้าน',
+                    style: GoogleFonts.kanit(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
               Expanded(
                 child: ListView.builder(
                   itemCount: storeProvider.stores.length,
                   itemBuilder: (context, index) {
                     final store = storeProvider.stores[index];
-                    return _buildMapStoreItem(store);
+                    return _buildMapStoreItem(store, index);
                   },
                 ),
               ),
@@ -499,31 +578,121 @@ class _PartnerStoreScreenState extends State<PartnerStoreScreen> with TickerProv
     );
   }
 
-  Widget _buildMapStoreItem(PartnerStore store) {
+  Widget _buildMapStoreItem(PartnerStore store, int index) {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: ListTile(
-        leading: Text(store.emoji, style: const TextStyle(fontSize: 24)),
-        title: Text(
-          store.name,
-          style: GoogleFonts.kanit(
-            fontWeight: FontWeight.bold,
-            fontSize: 14,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppConstants.primaryGreen.withOpacity(0.1),
+                AppConstants.lightGreen.withOpacity(0.1),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Center(
+            child: Text(store.emoji, style: const TextStyle(fontSize: 24)),
           ),
         ),
-        subtitle: Text(
-          store.address,
-          style: GoogleFonts.kanit(fontSize: 12),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                store.name,
+                style: GoogleFonts.kanit(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                  color: AppConstants.darkGreen,
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: AppConstants.primaryGreen,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                '#${index + 1}',
+                style: GoogleFonts.kanit(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
         ),
-        trailing: Icon(
-          Icons.directions,
-          color: AppConstants.primaryGreen,
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Icon(Icons.star, color: Colors.amber, size: 14),
+                const SizedBox(width: 4),
+                Text(
+                  store.rating.toString(),
+                  style: GoogleFonts.kanit(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.amber[700],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  store.category,
+                  style: GoogleFonts.kanit(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 2),
+            Text(
+              store.address,
+              style: GoogleFonts.kanit(
+                fontSize: 11,
+                color: Colors.grey[500],
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.location_on,
+              color: AppConstants.primaryGreen,
+              size: 20,
+            ),
+            Text(
+              'ดูแผนที่',
+              style: GoogleFonts.kanit(
+                fontSize: 10,
+                color: AppConstants.primaryGreen,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
         onTap: () => _showStoreDetails(store),
       ),
-    );
+    ).animate(delay: (index * 50).ms)
+        .fadeIn(duration: 300.ms)
+        .slideX(begin: 0.2, end: 0);
   }
 
   void _showStoreDetails(PartnerStore store) {
