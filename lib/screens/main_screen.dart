@@ -16,7 +16,9 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _screens = [
     const HomeScreen(),
-    const WasteCalendarScreen(),
+    const PartnerStoreScreen(),
+    const RewardsScreen(),
+    const ProfileScreen(),
   ];
 
   @override
@@ -36,18 +38,92 @@ class _MainScreenState extends State<MainScreen> {
         unselectedItemColor: Colors.grey,
         selectedLabelStyle: GoogleFonts.kanit(
           fontWeight: FontWeight.bold,
+          fontSize: 12,
         ),
-        unselectedLabelStyle: GoogleFonts.kanit(),
+        unselectedLabelStyle: GoogleFonts.kanit(
+          fontSize: 12,
+        ),
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: 'หน้าหลัก',
+            label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: 'ปฏิทินขยะ',
+            icon: Icon(Icons.store),
+            label: 'Partner Store',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.card_giftcard),
+            label: 'Rewards',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
           ),
         ],
+      ),
+    );
+  }
+}
+
+class PartnerStoreScreen extends StatelessWidget {
+  const PartnerStoreScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Partner Store',
+          style: GoogleFonts.kanit(fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: AppConstants.primaryGreen,
+        foregroundColor: Colors.white,
+      ),
+      body: const Center(
+        child: Text('Partner Store Screen'),
+      ),
+    );
+  }
+}
+
+class RewardsScreen extends StatelessWidget {
+  const RewardsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Rewards',
+          style: GoogleFonts.kanit(fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: AppConstants.primaryGreen,
+        foregroundColor: Colors.white,
+      ),
+      body: const Center(
+        child: Text('Rewards Screen'),
+      ),
+    );
+  }
+}
+
+class ProfileScreen extends StatelessWidget {
+  const ProfileScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Profile',
+          style: GoogleFonts.kanit(fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: AppConstants.primaryGreen,
+        foregroundColor: Colors.white,
+      ),
+      body: const Center(
+        child: Text('Profile Screen'),
       ),
     );
   }
