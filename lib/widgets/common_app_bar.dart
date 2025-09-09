@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_constants.dart';
+import 'greenpoint_logo.dart';
 
 class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -23,24 +24,22 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
       automaticallyImplyLeading: showBackButton,
       title: Row(
         children: [
-          Text(
-            'GreenPoint',
-            style: GoogleFonts.kanit(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
+          const GreenPointLogo(
+            size: 32,
+            showText: true,
+            textColor: Colors.white,
           ),
           if (title.isNotEmpty) ...[
-            const SizedBox(width: 8),
-            Text(
-              '•',
-              style: GoogleFonts.kanit(
-                fontSize: 16,
+            const SizedBox(width: 12),
+            Container(
+              width: 4,
+              height: 4,
+              decoration: const BoxDecoration(
                 color: Colors.white70,
+                shape: BoxShape.circle,
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 12),
             Text(
               title,
               style: GoogleFonts.kanit(

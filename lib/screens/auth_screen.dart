@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/user_provider.dart';
 import '../constants/app_constants.dart';
+import '../widgets/greenpoint_logo.dart';
 import 'main_screen.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -22,19 +23,31 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppConstants.primaryGreen,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              const SizedBox(height: 60),
-              _buildLogo(),
-              const SizedBox(height: 40),
-              _buildAuthForm(),
-              const SizedBox(height: 20),
-              _buildToggleButton(),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppConstants.primaryGreen,
+              AppConstants.lightGreen,
+              AppConstants.accentGreen,
             ],
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                const SizedBox(height: 60),
+                _buildLogo(),
+                const SizedBox(height: 40),
+                _buildAuthForm(),
+                const SizedBox(height: 20),
+                _buildToggleButton(),
+              ],
+            ),
           ),
         ),
       ),
@@ -45,40 +58,47 @@ class _AuthScreenState extends State<AuthScreen> {
     return Column(
       children: [
         Container(
-          width: 120,
-          height: 120,
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: Colors.white,
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.1),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
+                blurRadius: 30,
+                offset: const Offset(0, 15),
               ),
             ],
           ),
-          child: const Center(
-            child: Text(
-              '🌱',
-              style: TextStyle(fontSize: 60),
-            ),
+          child: const GreenPointLogo(
+            size: 80,
+            showText: false,
           ),
         ).animate().scale(duration: 800.ms).then().shimmer(duration: 1500.ms),
-        const SizedBox(height: 20),
+        const SizedBox(height: 24),
         Text(
           'GreenPoint',
           style: GoogleFonts.kanit(
-            fontSize: 32,
+            fontSize: 36,
             fontWeight: FontWeight.bold,
             color: Colors.white,
+            letterSpacing: 1.2,
           ),
         ).animate().fadeIn(duration: 600.ms, delay: 400.ms),
-        Text(
-          'สะสมแต้มเพื่อโลกใส 🌍',
-          style: GoogleFonts.kanit(
-            fontSize: 16,
-            color: Colors.white70,
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            'สะสมแต้มเพื่อโลกใส 🌍',
+            style: GoogleFonts.kanit(
+              fontSize: 16,
+              color: Colors.white,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ).animate().fadeIn(duration: 600.ms, delay: 600.ms),
       ],
