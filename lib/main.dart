@@ -5,6 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'providers/user_provider.dart';
 import 'providers/waste_provider.dart';
+import 'providers/store_provider.dart';
 import 'screens/auth_screen.dart';
 import 'screens/main_screen.dart';
 import 'constants/app_constants.dart';
@@ -32,6 +33,7 @@ class GreenPointApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => UserProvider()..loadUser()),
         ChangeNotifierProvider(create: (_) => WasteProvider()..loadEntries()),
+        ChangeNotifierProvider(create: (_) => StoreProvider()),
       ],
       child: MaterialApp(
         title: AppConstants.appName,
