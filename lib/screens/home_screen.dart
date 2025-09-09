@@ -24,28 +24,35 @@ class HomeScreen extends StatelessWidget {
       ),
       body: Consumer<UserProvider>(
         builder: (context, userProvider, child) {
-          if (userProvider.isLoading) {
-            return const Center(
-              child: CircularProgressIndicator(
-                color: AppConstants.primaryGreen,
+          try {
+            if (userProvider.isLoading) {
+              return const Center(
+                child: CircularProgressIndicator(
+                  color: AppConstants.primaryGreen,
+                ),
+              );
+            }
+
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  _buildProfileCard(userProvider),
+                  const SizedBox(height: 20),
+                  _buildShortcutMenu(),
+                  const SizedBox(height: 20),
+                  _buildPromotionBanner(),
+                  const SizedBox(height: 20),
+                  _buildCollectionCards(),
+                ],
               ),
             );
+          } catch (e) {
+            debugPrint('Error in HomeScreen: $e');
+            return const Center(
+              child: Text('เกิดข้อผิดพลาด กรุณาลองใหม่'),
+            );
           }
-
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                _buildProfileCard(userProvider),
-                const SizedBox(height: 20),
-                _buildShortcutMenu(),
-                const SizedBox(height: 20),
-                _buildPromotionBanner(),
-                const SizedBox(height: 20),
-                _buildCollectionCards(),
-              ],
-            ),
-          );
         },
       ),
     );

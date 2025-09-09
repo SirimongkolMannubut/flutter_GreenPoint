@@ -28,6 +28,7 @@ class UserProvider with ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Error loading user: $e');
+      _user = null;
     } finally {
       setLoading(false);
     }
@@ -54,6 +55,16 @@ class UserProvider with ChangeNotifier {
       await saveUser();
     } catch (e) {
       debugPrint('Error logging in: $e');
+      _user = User(
+        id: 'fallback_user',
+        name: 'ผู้ใช้งาน',
+        email: email,
+        totalPoints: 0,
+        plasticReduced: 0,
+        level: 1,
+        joinDate: DateTime.now(),
+        achievements: [],
+      );
     } finally {
       setLoading(false);
     }
@@ -75,6 +86,16 @@ class UserProvider with ChangeNotifier {
       await saveUser();
     } catch (e) {
       debugPrint('Error registering: $e');
+      _user = User(
+        id: 'fallback_user',
+        name: name,
+        email: email,
+        totalPoints: 0,
+        plasticReduced: 0,
+        level: 1,
+        joinDate: DateTime.now(),
+        achievements: [],
+      );
     } finally {
       setLoading(false);
     }

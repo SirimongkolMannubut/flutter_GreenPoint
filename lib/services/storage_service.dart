@@ -10,8 +10,11 @@ class StorageService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final userData = prefs.getString(_userKey);
-      if (userData != null) {
-        return json.decode(userData);
+      if (userData != null && userData.isNotEmpty) {
+        final decoded = json.decode(userData);
+        if (decoded is Map<String, dynamic>) {
+          return decoded;
+        }
       }
     } catch (e) {
       print('Error getting user data: $e');
@@ -21,6 +24,7 @@ class StorageService {
 
   static Future<bool> saveUser(Map<String, dynamic> userData) async {
     try {
+      if (userData.isEmpty) return false;
       final prefs = await SharedPreferences.getInstance();
       final userJson = json.encode(userData);
       return await prefs.setString(_userKey, userJson);

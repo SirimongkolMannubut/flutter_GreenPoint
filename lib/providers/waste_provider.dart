@@ -46,6 +46,7 @@ class WasteProvider with ChangeNotifier {
       _entries.sort((a, b) => b.date.compareTo(a.date));
     } catch (e) {
       debugPrint('Error loading waste entries: $e');
+      _entries = [];
     } finally {
       setLoading(false);
     }

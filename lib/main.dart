@@ -13,7 +13,11 @@ import 'constants/app_constants.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  await initializeDateFormatting('th', null);
+  try {
+    await initializeDateFormatting('th', null);
+  } catch (e) {
+    debugPrint('Error initializing date formatting: $e');
+  }
   
   try {
     await dotenv.load(fileName: ".env");
@@ -78,16 +82,21 @@ class GreenPointApp extends StatelessWidget {
         ),
         home: Consumer<UserProvider>(
           builder: (context, userProvider, child) {
-            if (userProvider.isLoading) {
-              return const Scaffold(
-                body: Center(
-                  child: CircularProgressIndicator(
-                    color: AppConstants.primaryGreen,
+            try {
+              if (userProvider.isLoading) {
+                return const Scaffold(
+                  body: Center(
+                    child: CircularProgressIndicator(
+                      color: AppConstants.primaryGreen,
+                    ),
                   ),
-                ),
-              );
+                );
+              }
+              return userProvider.isLoggedIn ? const MainScreen() : const AuthScreen();
+            } catch (e) {
+              debugPrint('Error in home builder: $e');
+              return const AuthScreen();
             }
-            return userProvider.isLoggedIn ? const MainScreen() : const AuthScreen();
           },
         ),
       ),

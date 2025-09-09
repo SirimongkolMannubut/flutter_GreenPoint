@@ -230,22 +230,34 @@ class _AuthScreenState extends State<AuthScreen> {
 
   void _handleAuth() async {
     if (_formKey.currentState!.validate()) {
-      final userProvider = context.read<UserProvider>();
-      
-      if (_isLogin) {
-        await userProvider.login(_emailController.text);
-      } else {
-        await userProvider.register(
-          _nameController.text,
-          _emailController.text,
-        );
-      }
+      try {
+        final userProvider = context.read<UserProvider>();
+        
+        if (_isLogin) {
+          await userProvider.login(_emailController.text.trim());
+        } else {
+          await userProvider.register(
+            _nameController.text.trim(),
+            _emailController.text.trim(),
+          );
+        }
 
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const MainScreen()),
-        );
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const MainScreen()),
+          );
+        }
+      } catch (e) {
+        debugPrint('Error in auth: $e');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('เกิดข้อผิดพลาด กรุณาลองใหม่'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
   }
