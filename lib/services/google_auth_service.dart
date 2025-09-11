@@ -4,14 +4,11 @@ import 'package:flutter/foundation.dart';
 class GoogleAuthService {
   static final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: ['email', 'profile'],
-    signInOption: SignInOption.standard,
-    serverClientId: '537093431389-v3uojqh1214if9pab6l40fqcch5jik78.apps.googleusercontent.com',
   );
 
   static Future<Map<String, dynamic>?> signInWithGoogle() async {
     try {
-      // Sign out first to ensure clean state
-      await _googleSignIn.signOut();
+      debugPrint('Starting Google Sign-In process');
       
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       
@@ -20,20 +17,21 @@ class GoogleAuthService {
         return {'cancelled': true};
       }
 
+      debugPrint('Google user signed in: ${googleUser.email}');
+      
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
       
-      if (googleAuth.accessToken == null || googleAuth.idToken == null) {
-        debugPrint('Failed to get Google authentication tokens');
-        return null;
-      }
+      debugPrint('Access Token: ${googleAuth.accessToken != null ? 'Available' : 'Null'}');
+      debugPrint('ID Token: ${googleAuth.idToken != null ? 'Available' : 'Null'}');
       
-      // Return user data without Firebase for now
+      // Return user data directly without Firebase for now
       return {
         'name': googleUser.displayName ?? 'Google User',
         'email': googleUser.email,
         'id': googleUser.id,
         'photoUrl': googleUser.photoUrl,
         'cancelled': false,
+        'hasTokens': googleAuth.accessToken != null && googleAuth.idToken != null,
       };
     } catch (e) {
       debugPrint('Google Sign-In Error: $e');

@@ -7,7 +7,7 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:537093431389:android:abcdef123456789",
+        "mobilesdk_app_id": "1:537093431389:android:b71e1dec6e6f1413110c67",
         "android_client_info": {
           "package_name": "com.example.flutter_greenpoint"
         }
@@ -15,12 +15,20 @@
       "oauth_client": [
         {
           "client_id": "537093431389-v3uojqh1214if9pab6l40fqcch5jik78.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.flutter_greenpoint",
+            "certificate_hash": "b71e1dec6e6f1413110c67c57d92bcac2df33760"
+          }
+        },
+        {
+          "client_id": "537093431389-v3uojqh1214if9pab6l40fqcch5jik78.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyABCDEFGHIJKLMNOPQRSTUVWXYZ1234567"
+          "current_key": "AIzaSyBCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
         }
       ],
       "services": {

@@ -375,22 +375,30 @@ class _AuthScreenState extends State<AuthScreen> {
 
   Future<void> _performLogin() async {
     try {
+      debugPrint('Attempting login with email: ${_emailController.text.trim()}');
+      
       final userProvider = context.read<UserProvider>();
       final success = await userProvider.login(
         _emailController.text.trim(),
         _passwordController.text,
       );
 
+      debugPrint('Login result: $success');
+
       if (success && mounted) {
+        debugPrint('Login successful, navigating to main screen');
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const MainScreen()),
         );
       } else if (mounted) {
-        _showErrorSnackBar('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+        debugPrint('Login failed, showing error');
+        _showErrorSnackBar('ลองใหม่อีกครั้ง หรือใช้: test@greenpoint.com / 123456');
       }
-    } catch (e) {
-      _showErrorSnackBar('เกิดข้อผิดพลาด กรุณาลองใหม่');
+    } catch (e, stackTrace) {
+      debugPrint('Login error: $e');
+      debugPrint('Stack trace: $stackTrace');
+      _showErrorSnackBar('เกิดข้อผิดพลาด: $e');
     }
   }
 
@@ -438,6 +446,8 @@ class _AuthScreenState extends State<AuthScreen> {
       if (mounted) {
         final userProvider = context.read<UserProvider>();
         
+        debugPrint('Google Sign-In result: $result');
+        
         final success = await userProvider.loginWithGoogle(
           result['name'] ?? 'Google User',
           result['email'] ?? '',
@@ -445,6 +455,7 @@ class _AuthScreenState extends State<AuthScreen> {
         );
         
         if (success) {
+          _showSuccessSnackBar('เข้าสู่ระบบด้วย Google สำเร็จ!');
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const MainScreen()),

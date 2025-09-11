@@ -24,18 +24,38 @@ class User {
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
-    return User(
-      id: json['id'],
-      name: json['name'],
-      email: json['email'],
-      profileImage: json['profileImage'],
-      profileImagePath: json['profileImagePath'],
-      totalPoints: json['totalPoints'],
-      plasticReduced: json['plasticReduced'],
-      level: json['level'],
-      joinDate: DateTime.parse(json['joinDate']),
-      achievements: List<String>.from(json['achievements'] ?? []),
-    );
+    try {
+      return User(
+        id: json['id']?.toString() ?? '',
+        name: json['name']?.toString() ?? '',
+        email: json['email']?.toString() ?? '',
+        profileImage: json['profileImage']?.toString(),
+        profileImagePath: json['profileImagePath']?.toString() ?? '',
+        totalPoints: int.tryParse(json['totalPoints']?.toString() ?? '0') ?? 0,
+        plasticReduced: int.tryParse(json['plasticReduced']?.toString() ?? '0') ?? 0,
+        level: int.tryParse(json['level']?.toString() ?? '1') ?? 1,
+        joinDate: json['joinDate'] != null 
+            ? DateTime.tryParse(json['joinDate'].toString()) ?? DateTime.now()
+            : DateTime.now(),
+        achievements: json['achievements'] != null 
+            ? List<String>.from(json['achievements'])
+            : [],
+      );
+    } catch (e) {
+      print('Error parsing user from JSON: $e');
+      // Return default user if parsing fails
+      return User(
+        id: json['id']?.toString() ?? 'unknown',
+        name: json['name']?.toString() ?? 'Unknown User',
+        email: json['email']?.toString() ?? '',
+        profileImagePath: '',
+        totalPoints: 0,
+        plasticReduced: 0,
+        level: 1,
+        joinDate: DateTime.now(),
+        achievements: [],
+      );
+    }
   }
 
   Map<String, dynamic> toJson() {

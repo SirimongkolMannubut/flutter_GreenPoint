@@ -7,6 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../providers/user_provider.dart';
 import '../constants/app_constants.dart';
 import '../widgets/common_app_bar.dart';
+import '../widgets/custom_qr_icon.dart';
 import 'qr_scanner_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -435,11 +436,62 @@ class _HomeScreenState extends State<HomeScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _buildShortcutItem('Scan QR', Icons.qr_code_scanner, () => _showScanOptions(context), '📷'),
+        _buildShortcutItemWithCustomIcon('Scan QR', () => _showScanOptions(context)),
         _buildShortcutItem('ร้านค้า', Icons.store, () {}, '🏪'),
         _buildShortcutItem('แลกของ', Icons.card_giftcard, () {}, '🎁'),
       ],
     ).animate().fadeIn(duration: 600.ms, delay: 200.ms);
+  }
+
+  Widget _buildShortcutItemWithCustomIcon(String title, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 100,
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: AppConstants.primaryGreen.withOpacity(0.1),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppConstants.primaryGreen.withOpacity(0.1),
+                    AppConstants.lightGreen.withOpacity(0.1),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: CustomQRIcon(
+                size: 28,
+                color: AppConstants.primaryGreen,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: GoogleFonts.kanit(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: AppConstants.darkGreen,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildShortcutItem(String title, IconData icon, VoidCallback onTap, String emoji) {
