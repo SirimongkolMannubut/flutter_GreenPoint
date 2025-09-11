@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import '../models/user.dart';
 import '../services/storage_service.dart';
+import '../services/analytics_service.dart';
+
 
 class UserProvider with ChangeNotifier {
   User? _user;
@@ -25,6 +27,8 @@ class UserProvider with ChangeNotifier {
       final userData = await StorageService.getUser();
       if (userData != null) {
         _user = User.fromJson(userData);
+      } else {
+        _user = null;
       }
     } catch (e) {
       debugPrint('Error loading user: $e');
@@ -34,45 +38,75 @@ class UserProvider with ChangeNotifier {
     }
   }
 
-  Future<void> login(String email) async {
+  Future<bool> login(String email, String password) async {
     setLoading(true);
     try {
-      final userData = await StorageService.getUser();
-      if (userData != null && userData['email'] == email) {
-        _user = User.fromJson(userData);
+      // Initialize demo users if no users exist
+      await _initializeDemoUsers();
+      
+      // Get all users from storage
+      final allUsers = await StorageService.getAllUsers();
+      
+      // Find user with matching email and password
+      final matchingUser = allUsers.firstWhere(
+        (user) => user['email'] == email && user['password'] == password,
+        orElse: () => <String, dynamic>{},
+      );
+      
+      if (matchingUser.isNotEmpty) {
+        _user = User.fromJson(matchingUser);
+        await StorageService.setCurrentUser(matchingUser);
+        await AnalyticsService.incrementLogin();
+        return true;
       } else {
-        _user = User(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          name: 'ผู้ใช้งาน',
-          email: email,
-          totalPoints: 0,
-          plasticReduced: 0,
-          level: 1,
-          joinDate: DateTime.now(),
-          achievements: [],
-        );
+        return false;
       }
-      await saveUser();
     } catch (e) {
       debugPrint('Error logging in: $e');
-      _user = User(
-        id: 'fallback_user',
-        name: 'ผู้ใช้งาน',
-        email: email,
-        totalPoints: 0,
-        plasticReduced: 0,
-        level: 1,
-        joinDate: DateTime.now(),
-        achievements: [],
-      );
+      return false;
     } finally {
       setLoading(false);
     }
   }
 
-  Future<void> register(String name, String email) async {
+  Future<void> _initializeDemoUsers() async {
+    try {
+      final allUsers = await StorageService.getAllUsers();
+      if (allUsers.isEmpty) {
+        // Add demo user
+        final demoUser = {
+          'id': 'demo_user_1',
+          'name': 'ผู้ใช้ทดสอบ',
+          'email': 'test@greenpoint.com',
+          'password': '123456',
+          'totalPoints': 150,
+          'plasticReduced': 25,
+          'level': 2,
+          'joinDate': DateTime.now().toIso8601String(),
+          'achievements': [],
+          'profileImagePath': '',
+        };
+        await StorageService.addUser(demoUser);
+      }
+    } catch (e) {
+      debugPrint('Error initializing demo users: $e');
+    }
+  }
+
+  Future<bool> register(String name, String email, String password) async {
     setLoading(true);
     try {
+      // Check if user already exists
+      final allUsers = await StorageService.getAllUsers();
+      final existingUser = allUsers.firstWhere(
+        (user) => user['email'] == email,
+        orElse: () => <String, dynamic>{},
+      );
+      
+      if (existingUser.isNotEmpty) {
+        return false; // User already exists
+      }
+      
       _user = User(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         name: name,
@@ -83,19 +117,64 @@ class UserProvider with ChangeNotifier {
         joinDate: DateTime.now(),
         achievements: [],
       );
-      await saveUser();
+      
+      // Save user with password
+      final userDataWithPassword = _user!.toJson();
+      userDataWithPassword['password'] = password;
+      
+      await StorageService.addUser(userDataWithPassword);
+      await StorageService.setCurrentUser(userDataWithPassword);
+      await AnalyticsService.incrementUserCount();
+      await AnalyticsService.incrementRegistration();
+      
+      return true;
     } catch (e) {
       debugPrint('Error registering: $e');
-      _user = User(
-        id: 'fallback_user',
-        name: name,
-        email: email,
-        totalPoints: 0,
-        plasticReduced: 0,
-        level: 1,
-        joinDate: DateTime.now(),
-        achievements: [],
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  Future<bool> loginWithGoogle(String name, String email, String googleId) async {
+    setLoading(true);
+    try {
+      // Check if Google user already exists
+      final allUsers = await StorageService.getAllUsers();
+      final existingUser = allUsers.firstWhere(
+        (user) => user['email'] == email || user['id'] == googleId,
+        orElse: () => <String, dynamic>{},
       );
+      
+      if (existingUser.isNotEmpty) {
+        // User exists, login
+        _user = User.fromJson(existingUser);
+        await StorageService.setCurrentUser(existingUser);
+      } else {
+        // New Google user, create account
+        _user = User(
+          id: googleId,
+          name: name,
+          email: email,
+          totalPoints: 0,
+          plasticReduced: 0,
+          level: 1,
+          joinDate: DateTime.now(),
+          achievements: [],
+        );
+        
+        final userDataWithPassword = _user!.toJson();
+        userDataWithPassword['password'] = 'google_auth'; // Special marker for Google users
+        
+        await StorageService.addUser(userDataWithPassword);
+        await StorageService.setCurrentUser(userDataWithPassword);
+      }
+      
+      await AnalyticsService.incrementLogin();
+      return true;
+    } catch (e) {
+      debugPrint('Google login error: $e');
+      return false;
     } finally {
       setLoading(false);
     }
@@ -105,7 +184,8 @@ class UserProvider with ChangeNotifier {
 
   Future<void> saveUser() async {
     if (_user != null) {
-      await StorageService.saveUser(_user!.toJson());
+      await StorageService.setCurrentUser(_user!.toJson());
+      await StorageService.updateUser(_user!.toJson());
     }
   }
 
@@ -129,6 +209,22 @@ class UserProvider with ChangeNotifier {
   Future<void> updateProfile(String name, String email) async {
     if (_user != null) {
       _user = _user!.copyWith(name: name, email: email);
+      await saveUser();
+      notifyListeners();
+    }
+  }
+
+  Future<void> updateUserName(String name) async {
+    if (_user != null) {
+      _user = _user!.copyWith(name: name);
+      await saveUser();
+      notifyListeners();
+    }
+  }
+
+  Future<void> updateProfileImage(String imagePath) async {
+    if (_user != null) {
+      _user = _user!.copyWith(profileImagePath: imagePath);
       await saveUser();
       notifyListeners();
     }

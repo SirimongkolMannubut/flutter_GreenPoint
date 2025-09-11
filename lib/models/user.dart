@@ -3,6 +3,7 @@ class User {
   final String name;
   final String email;
   final String? profileImage;
+  final String? profileImagePath;
   final int totalPoints;
   final int plasticReduced;
   final int level;
@@ -14,6 +15,7 @@ class User {
     required this.name,
     required this.email,
     this.profileImage,
+    this.profileImagePath,
     required this.totalPoints,
     required this.plasticReduced,
     required this.level,
@@ -27,6 +29,7 @@ class User {
       name: json['name'],
       email: json['email'],
       profileImage: json['profileImage'],
+      profileImagePath: json['profileImagePath'],
       totalPoints: json['totalPoints'],
       plasticReduced: json['plasticReduced'],
       level: json['level'],
@@ -41,6 +44,7 @@ class User {
       'name': name,
       'email': email,
       'profileImage': profileImage,
+      'profileImagePath': profileImagePath,
       'totalPoints': totalPoints,
       'plasticReduced': plasticReduced,
       'level': level,
@@ -54,6 +58,7 @@ class User {
     String? name,
     String? email,
     String? profileImage,
+    String? profileImagePath,
     int? totalPoints,
     int? plasticReduced,
     int? level,
@@ -65,6 +70,7 @@ class User {
       name: name ?? this.name,
       email: email ?? this.email,
       profileImage: profileImage ?? this.profileImage,
+      profileImagePath: profileImagePath ?? this.profileImagePath,
       totalPoints: totalPoints ?? this.totalPoints,
       plasticReduced: plasticReduced ?? this.plasticReduced,
       level: level ?? this.level,

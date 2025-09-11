@@ -2,12 +2,275 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../providers/user_provider.dart';
 import '../constants/app_constants.dart';
 import '../widgets/common_app_bar.dart';
+import 'qr_scanner_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+
+  void _showScanOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'เลือกวิธีการสแกน',
+              style: GoogleFonts.kanit(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AppConstants.darkGreen,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildScanOption(
+                  context,
+                  'สแกนด้วยกล้อง',
+                  Icons.camera_alt,
+                  AppConstants.primaryGreen,
+                  () => _scanWithCamera(context),
+                ),
+                _buildScanOption(
+                  context,
+                  'เลือกจากแกลเลอรี่',
+                  Icons.photo_library,
+                  AppConstants.accentGreen,
+                  () => _pickFromGallery(context),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildScanOption(BuildContext context, String title, IconData icon, Color color, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 140,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: Colors.white, size: 24),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: GoogleFonts.kanit(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _scanWithCamera(BuildContext context) async {
+    Navigator.pop(context);
+    
+    final cameraStatus = await Permission.camera.request();
+    if (cameraStatus.isGranted) {
+      final result = await Navigator.push<String>(
+        context,
+        MaterialPageRoute(builder: (context) => const QRScannerScreen()),
+      );
+      
+      if (result != null && context.mounted) {
+        _showScanResult(context, result, 'QR Code');
+      }
+    } else {
+      if (context.mounted) {
+        _showPermissionDenied(context, 'กล้อง');
+      }
+    }
+  }
+
+  void _pickFromGallery(BuildContext context) async {
+    Navigator.pop(context);
+    
+    final ImagePicker picker = ImagePicker();
+    try {
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+      
+      if (image != null && context.mounted) {
+        _showScanResult(context, image.path, 'รูปภาพ');
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'เกิดข้อผิดพลาดในการเลือกรูปภาพ',
+              style: GoogleFonts.kanit(),
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showScanResult(BuildContext context, String result, String type) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppConstants.primaryGreen.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                type == 'QR Code' ? Icons.qr_code : Icons.image,
+                color: AppConstants.primaryGreen,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'ผลลัพธ์ $type',
+              style: GoogleFonts.kanit(
+                fontWeight: FontWeight.bold,
+                color: AppConstants.darkGreen,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                result,
+                style: GoogleFonts.kanit(
+                  fontSize: 14,
+                  color: AppConstants.darkGreen,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              '✅ สแกนสำเร็จ! คุณได้รับ 10 แต้ม',
+              style: GoogleFonts.kanit(
+                fontSize: 14,
+                color: AppConstants.primaryGreen,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'ปิด',
+              style: GoogleFonts.kanit(
+                color: Colors.grey[600],
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppConstants.primaryGreen,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              'ใช้งาน',
+              style: GoogleFonts.kanit(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPermissionDenied(BuildContext context, String permission) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'กรุณาอนุญาตการใช้งาน$permission เพื่อใช้ฟีเจอร์นี้',
+          style: GoogleFonts.kanit(),
+        ),
+        backgroundColor: Colors.orange,
+        action: SnackBarAction(
+          label: 'ตั้งค่า',
+          textColor: Colors.white,
+          onPressed: () => openAppSettings(),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -172,7 +435,7 @@ class HomeScreen extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _buildShortcutItem('Scan QR', Icons.qr_code_scanner, () {}, '📱'),
+        _buildShortcutItem('Scan QR', Icons.qr_code_scanner, () => _showScanOptions(context), '📷'),
         _buildShortcutItem('ร้านค้า', Icons.store, () {}, '🏪'),
         _buildShortcutItem('แลกของ', Icons.card_giftcard, () {}, '🎁'),
       ],

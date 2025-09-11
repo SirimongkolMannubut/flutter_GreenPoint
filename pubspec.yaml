@@ -21,9 +21,22 @@ dependencies:
   google_fonts: ^6.1.0
   fl_chart: ^0.66.2
   qr_flutter: ^4.1.0
+  mobile_scanner: ^3.5.6
   image_picker: ^1.0.7
+  path_provider: ^2.1.1
   geolocator: ^10.1.0
   permission_handler: ^11.2.0
+  url_launcher: ^6.2.2
+  share_plus: ^7.2.2
+  crypto: ^3.0.3
+  local_auth: ^2.1.7
+  
+  # Google Sign-In (without Firebase for now)
+  google_sign_in: ^6.2.1
+  
+  # Email Service
+  mailer: ^6.0.1
+
 
 dev_dependencies:
   flutter_test:

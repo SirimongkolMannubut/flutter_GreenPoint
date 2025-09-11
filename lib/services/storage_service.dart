@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class StorageService {
   static const String _userKey = 'user_data';
+  static const String _usersKey = 'all_users_data';
   static const String _activitiesKey = 'activities_data';
   static const String _settingsKey = 'settings_data';
 
@@ -104,6 +105,62 @@ class StorageService {
       return await prefs.setString('waste_entries', entriesJson);
     } catch (e) {
       print('Error saving waste entries: $e');
+      return false;
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getAllUsers() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final usersData = prefs.getString(_usersKey);
+      if (usersData != null) {
+        final List<dynamic> decoded = json.decode(usersData);
+        return decoded.cast<Map<String, dynamic>>();
+      }
+    } catch (e) {
+      print('Error getting all users: $e');
+    }
+    return [];
+  }
+
+  static Future<bool> addUser(Map<String, dynamic> userData) async {
+    try {
+      final allUsers = await getAllUsers();
+      allUsers.add(userData);
+      final prefs = await SharedPreferences.getInstance();
+      final usersJson = json.encode(allUsers);
+      return await prefs.setString(_usersKey, usersJson);
+    } catch (e) {
+      print('Error adding user: $e');
+      return false;
+    }
+  }
+
+  static Future<bool> updateUser(Map<String, dynamic> userData) async {
+    try {
+      final allUsers = await getAllUsers();
+      final userIndex = allUsers.indexWhere((user) => user['id'] == userData['id']);
+      
+      if (userIndex != -1) {
+        allUsers[userIndex] = userData;
+        final prefs = await SharedPreferences.getInstance();
+        final usersJson = json.encode(allUsers);
+        return await prefs.setString(_usersKey, usersJson);
+      }
+      return false;
+    } catch (e) {
+      print('Error updating user: $e');
+      return false;
+    }
+  }
+
+  static Future<bool> setCurrentUser(Map<String, dynamic> userData) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userJson = json.encode(userData);
+      return await prefs.setString(_userKey, userJson);
+    } catch (e) {
+      print('Error setting current user: $e');
       return false;
     }
   }

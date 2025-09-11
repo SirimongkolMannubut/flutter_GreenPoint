@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "537093431389",
+    "project_id": "solar-muse-465407-p7",
+    "storage_bucket": "solar-muse-465407-p7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:537093431389:android:abcdef123456789",
+        "android_client_info": {
+          "package_name": "com.example.flutter_greenpoint"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "537093431389-v3uojqh1214if9pab6l40fqcch5jik78.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABCDEFGHIJKLMNOPQRSTUVWXYZ1234567"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "537093431389-v3uojqh1214if9pab6l40fqcch5jik78.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
