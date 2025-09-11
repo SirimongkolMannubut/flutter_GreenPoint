@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
-import '../models/user.dart';
-import '../services/api_service.dart';
-import '../services/storage_service.dart';
+import '../models/models.dart';
+import '../services/services.dart';
 
 class ApiUserProvider with ChangeNotifier {
   User? _user;

@@ -3,14 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'providers/user_provider.dart';
-import 'providers/waste_provider.dart';
-import 'providers/store_provider.dart';
-import 'providers/settings_provider.dart';
-import 'providers/admin_provider.dart';
-import 'screens/splash_screen.dart';
-import 'screens/auth_screen.dart';
-import 'screens/main_screen.dart';
+import 'providers/providers.dart';
+import 'screens/screens.dart';
 import 'constants/app_constants.dart';
 
 void main() async {
@@ -261,23 +255,23 @@ class _GreenPointAppState extends State<GreenPointApp> {
             ),
           ),
         ),
-        home: Consumer<UserProvider>(
-          builder: (context, userProvider, child) {
-            return AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              child: _buildHomeScreen(userProvider),
-            );
-          },
-        ),
-            builder: (context, child) {
-              return MediaQuery(
-                data: MediaQuery.of(context).copyWith(
-                  textScaleFactor: MediaQuery.of(context).textScaleFactor.clamp(0.8, 1.2),
+                home: Consumer<UserProvider>(
+                  builder: (context, userProvider, child) {
+                    return AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      child: _buildHomeScreen(userProvider),
+                    );
+                  },
                 ),
-                child: child!,
+                builder: (context, child) {
+                  return MediaQuery(
+                    data: MediaQuery.of(context).copyWith(
+                      textScaleFactor: MediaQuery.of(context).textScaleFactor.clamp(0.8, 1.2),
+                    ),
+                    child: child!,
+                  );
+                },
               );
-            },
-          );
             },
           );
         },

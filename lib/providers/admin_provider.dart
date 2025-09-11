@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/admin.dart';
+import '../models/models.dart';
 
 class AdminProvider with ChangeNotifier {
   Admin? _currentAdmin;

@@ -1,0 +1,487 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import '../../providers/providers.dart';
+import '../../constants/app_constants.dart';
+import '../../widgets/widgets.dart';
+import '../../services/services.dart';
+import '../user/main_screen.dart';
+import '../admin/admin_login_screen.dart';
+
+class AuthScreen extends StatefulWidget {
+  const AuthScreen({super.key});
+
+  @override
+  State<AuthScreen> createState() => _AuthScreenState();
+}
+
+class _AuthScreenState extends State<AuthScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
+  bool _isLogin = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppConstants.primaryGreen,
+              AppConstants.lightGreen,
+              AppConstants.accentGreen,
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                const SizedBox(height: 60),
+                _buildLogo(),
+                const SizedBox(height: 40),
+                _buildAuthForm(),
+                const SizedBox(height: 20),
+                _buildToggleButton(),
+                const SizedBox(height: 16),
+                _buildAdminButton(),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLogo() {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 30,
+                offset: const Offset(0, 15),
+              ),
+            ],
+          ),
+          child: const GreenPointLogo(
+            size: 80,
+            showText: false,
+          ),
+        ).animate().scale(duration: 800.ms).then().shimmer(duration: 1500.ms),
+        const SizedBox(height: 24),
+        Text(
+          'GreenPoint',
+          style: GoogleFonts.kanit(
+            fontSize: 36,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            letterSpacing: 1.2,
+          ),
+        ).animate().fadeIn(duration: 600.ms, delay: 400.ms),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            'สะสมแต้มเพื่อโลกใส 🌍',
+            style: GoogleFonts.kanit(
+              fontSize: 16,
+              color: Colors.white,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ).animate().fadeIn(duration: 600.ms, delay: 600.ms),
+      ],
+    );
+  }
+
+  Widget _buildAuthForm() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              _isLogin ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก',
+              style: GoogleFonts.kanit(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: AppConstants.darkGreen,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            if (!_isLogin) ...[
+              TextFormField(
+                controller: _nameController,
+                decoration: InputDecoration(
+                  labelText: 'ชื่อ-นามสกุล',
+                  labelStyle: GoogleFonts.kanit(),
+                  prefixIcon: const Icon(Icons.person),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppConstants.primaryGreen),
+                  ),
+                ),
+                style: GoogleFonts.kanit(),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'กรุณากรอกชื่อ-นามสกุล';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+            ],
+            TextFormField(
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: InputDecoration(
+                labelText: 'อีเมล',
+                labelStyle: GoogleFonts.kanit(),
+                prefixIcon: const Icon(Icons.email),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppConstants.primaryGreen),
+                ),
+              ),
+              style: GoogleFonts.kanit(),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'กรุณากรอกอีเมล';
+                }
+                if (!value.contains('@')) {
+                  return 'รูปแบบอีเมลไม่ถูกต้อง';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _passwordController,
+              obscureText: _obscurePassword,
+              decoration: InputDecoration(
+                labelText: 'รหัสผ่าน',
+                labelStyle: GoogleFonts.kanit(),
+                prefixIcon: const Icon(Icons.lock),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
+                  },
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppConstants.primaryGreen),
+                ),
+              ),
+              style: GoogleFonts.kanit(),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'กรุณากรอกรหัสผ่าน';
+                }
+                if (value.length < 6) {
+                  return 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: _handleAuth,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppConstants.primaryGreen,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Text(
+                _isLogin ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก',
+                style: GoogleFonts.kanit(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(child: Divider(color: Colors.grey[300])),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Text(
+                    'หรือ',
+                    style: GoogleFonts.kanit(color: Colors.grey[600]),
+                  ),
+                ),
+                Expanded(child: Divider(color: Colors.grey[300])),
+              ],
+            ),
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              onPressed: _handleGoogleSignIn,
+              icon: Image.network(
+                'https://developers.google.com/identity/images/g-logo.png',
+                height: 20,
+                width: 20,
+              ),
+              label: Text(
+                'เข้าสู่ระบบด้วย Google',
+                style: GoogleFonts.kanit(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[700],
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                side: BorderSide(color: Colors.grey[300]!),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ).animate().slideY(begin: 0.3, end: 0, duration: 600.ms, delay: 800.ms);
+  }
+
+  Widget _buildToggleButton() {
+    return TextButton(
+      onPressed: () {
+        setState(() {
+          _isLogin = !_isLogin;
+          _nameController.clear();
+          _emailController.clear();
+          _passwordController.clear();
+        });
+      },
+      child: Text(
+        _isLogin ? 'ยังไม่มีบัญชี? สมัครสมาชิก' : 'มีบัญชีแล้ว? เข้าสู่ระบบ',
+        style: GoogleFonts.kanit(
+          color: Colors.white,
+          fontSize: 16,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAdminButton() {
+    return TextButton(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const AdminLoginScreen(),
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.white70),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          '🔐 เข้าสู่ระบบผู้ดูแล',
+          style: GoogleFonts.kanit(
+            color: Colors.white70,
+            fontSize: 14,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _handleAuth() async {
+    if (_formKey.currentState!.validate()) {
+      if (!_isLogin) {
+        await _performRegistration();
+      } else {
+        await _performLogin();
+      }
+    }
+  }
+
+  Future<void> _performLogin() async {
+    try {
+      final userProvider = context.read<UserProvider>();
+      final success = await userProvider.login(
+        _emailController.text.trim(),
+        _passwordController.text,
+      );
+
+      if (success && mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MainScreen()),
+        );
+      } else if (mounted) {
+        _showErrorSnackBar('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+      }
+    } catch (e) {
+      _showErrorSnackBar('เกิดข้อผิดพลาด: $e');
+    }
+  }
+
+  Future<void> _performRegistration() async {
+    try {
+      final userProvider = context.read<UserProvider>();
+      final success = await userProvider.register(
+        _nameController.text.trim(),
+        _emailController.text.trim(),
+        _passwordController.text,
+      );
+
+      if (success && mounted) {
+        _showSuccessSnackBar('สมัครสมาชิกสำเร็จ!');
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MainScreen()),
+        );
+      } else if (mounted) {
+        _showErrorSnackBar('เกิดข้อผิดพลาดในการสมัครสมาชิก');
+      }
+    } catch (e) {
+      _showErrorSnackBar('เกิดข้อผิดพลาด กรุณาลองใหม่');
+    }
+  }
+
+  void _showErrorSnackBar(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: GoogleFonts.kanit()),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
+  void _showSuccessSnackBar(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: GoogleFonts.kanit()),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    try {
+      _showLoadingDialog('กำลังเข้าสู่ระบบด้วย Google...');
+      
+      final result = await GoogleAuthService.signInWithGoogle();
+      
+      if (!mounted) return;
+      Navigator.pop(context); // Close loading dialog
+      
+      if (result == null) {
+        _showErrorSnackBar('เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย Google');
+        return;
+      }
+      
+      if (result['error'] != null) {
+        _showErrorSnackBar('Google Sign-In Error: ${result['error']} - ${result['message']}');
+        return;
+      }
+      
+      if (result['cancelled'] == true) {
+        return;
+      }
+      
+      if (mounted) {
+        // ใช้ UserProvider สำหรับ Google Sign-In
+        final userProvider = context.read<UserProvider>();
+        
+        // เข้าสู่ระบบด้วย Google data
+        final success = await userProvider.loginWithGoogle(
+          result['name'] ?? 'Google User',
+          result['email'] ?? '',
+          result['id'] ?? '',
+        );
+        
+        if (success) {
+          _showSuccessSnackBar('เข้าสู่ระบบด้วย Google สำเร็จ!');
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const MainScreen()),
+          );
+        } else {
+          _showErrorSnackBar('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // Close loading dialog if open
+        _showErrorSnackBar('เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย Google');
+      }
+    }
+  }
+
+  void _showLoadingDialog(String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        content: Row(
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                message,
+                style: GoogleFonts.kanit(),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

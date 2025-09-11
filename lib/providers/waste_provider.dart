@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '../models/waste_entry.dart';
-import '../services/storage_service.dart';
+import '../models/models.dart';
+import '../services/services.dart';
 
 class WasteProvider with ChangeNotifier {
   List<WasteEntry> _entries = [];

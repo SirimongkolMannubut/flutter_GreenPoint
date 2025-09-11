@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
-import '../models/partner_store.dart';
-import '../services/api_service.dart';
+import '../models/models.dart';
+import '../services/services.dart';
 
 class ApiStoreProvider with ChangeNotifier {
   List<PartnerStore> _stores = [];

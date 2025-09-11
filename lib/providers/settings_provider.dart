@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/localization_service.dart';
-import '../services/notification_service.dart';
-import '../services/security_service.dart';
-import '../services/analytics_service.dart';
+import '../services/services.dart';
 
 
 class SettingsProvider with ChangeNotifier {
