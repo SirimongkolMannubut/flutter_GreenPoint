@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import '../providers/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -151,18 +152,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
       
       if (image != null) {
-        // Save image to app directory
         final appDir = await getApplicationDocumentsDirectory();
         final fileName = 'profile_${DateTime.now().millisecondsSinceEpoch}.jpg';
         final savedImage = await File(image.path).copy('${appDir.path}/$fileName');
         
-        // Save path to SharedPreferences
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('profile_image_path', savedImage.path);
         
-        // Update UserProvider
         final userProvider = Provider.of<UserProvider>(context, listen: false);
-        userProvider.updateProfileImage(savedImage.path);
+        // userProvider.updateProfileImage(savedImage.path);
         
         setState(() {
           _profileImagePath = savedImage.path;
@@ -211,7 +209,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _saveName() async {
     if (_nameController.text.trim().isNotEmpty) {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
-      await userProvider.updateUserName(_nameController.text.trim());
+      await userProvider.updateProfile(_nameController.text.trim(), userProvider.user?.email ?? '');
       
       setState(() {
         _isEditingName = false;
@@ -235,10 +233,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       MaterialPageRoute(builder: (context) => const SettingsScreen()),
     );
   }
-
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -311,10 +305,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
                 child: ClipOval(
-                  child: (userProvider.user?.profileImagePath != null && 
-                          File(userProvider.user!.profileImagePath!).existsSync())
+                  child: (_profileImagePath != null && File(_profileImagePath!).existsSync())
                       ? Image.file(
-                          File(userProvider.user!.profileImagePath!),
+                          File(_profileImagePath!),
                           fit: BoxFit.cover,
                         )
                       : Container(
@@ -434,6 +427,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ],
             ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'ID: ${userProvider.userId}',
+            style: GoogleFonts.kanit(
+              fontSize: 12,
+              color: Colors.white.withOpacity(0.7),
+              fontWeight: FontWeight.w500,
+            ),
           ),
           const SizedBox(height: 8),
           Text(

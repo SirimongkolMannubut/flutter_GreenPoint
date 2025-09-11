@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../providers/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -514,6 +515,8 @@ class _RewardsScreenState extends State<RewardsScreen> {
     final userProvider = context.read<UserProvider>();
     
     final success = await userProvider.deductPoints(points);
+    
+    if (!mounted) return;
     
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(

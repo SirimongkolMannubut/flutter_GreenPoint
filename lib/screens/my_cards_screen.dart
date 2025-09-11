@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import '../providers/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../constants/app_constants.dart';
-import '../providers/user_provider.dart';
+import '../providers/api_user_provider.dart';
 import '../widgets/common_app_bar.dart';
 import 'dart:math';
 

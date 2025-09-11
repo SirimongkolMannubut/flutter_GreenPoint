@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import '../providers/store_provider.dart';
+import '../providers/store_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../constants/app_constants.dart';
-import '../providers/user_provider.dart';
-import '../providers/store_provider.dart';
+
+import '../providers/api_store_provider.dart';
 import '../providers/settings_provider.dart';
 import '../models/partner_store.dart';
 import '../widgets/common_app_bar.dart';
 import 'home_screen.dart';
-import 'waste_calendar_screen.dart';
-import 'auth_screen.dart';
+
+
 import 'profile_screen.dart';
 import 'rewards_screen.dart';
 

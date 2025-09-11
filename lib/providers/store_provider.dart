@@ -6,10 +6,12 @@ class StoreProvider with ChangeNotifier {
   List<PartnerStore> _filteredStores = [];
   String _searchQuery = '';
   String _selectedCategory = 'ทั้งหมด';
+  bool _isLoading = false;
 
   List<PartnerStore> get stores => _filteredStores;
   String get searchQuery => _searchQuery;
   String get selectedCategory => _selectedCategory;
+  bool get isLoading => _isLoading;
 
   List<String> get categories => [
     'ทั้งหมด',
@@ -22,7 +24,16 @@ class StoreProvider with ChangeNotifier {
   ];
 
   StoreProvider() {
+    loadStores();
+  }
+
+  Future<void> loadStores() async {
+    _isLoading = true;
+    notifyListeners();
+    await Future.delayed(const Duration(milliseconds: 500));
     _loadStores();
+    _isLoading = false;
+    notifyListeners();
   }
 
   void _loadStores() {

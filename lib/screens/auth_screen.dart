@@ -6,7 +6,6 @@ import '../providers/user_provider.dart';
 import '../constants/app_constants.dart';
 import '../widgets/greenpoint_logo.dart';
 import '../services/google_auth_service.dart';
-import '../services/email_service.dart';
 import 'main_screen.dart';
 import 'admin_login_screen.dart';
 
@@ -342,62 +341,30 @@ class _AuthScreenState extends State<AuthScreen> {
   void _handleAuth() async {
     if (_formKey.currentState!.validate()) {
       if (!_isLogin) {
-        await _handleEmailVerification();
+        await _performRegistration();
       } else {
         await _performLogin();
       }
     }
   }
 
-  Future<void> _handleEmailVerification() async {
-    try {
-      final email = _emailController.text.trim();
-      final name = _nameController.text.trim();
-      
-      _showLoadingDialog('กำลังส่งรหัสยืนยัน...');
-      
-      final verificationCode = await EmailService.sendVerificationCode(email, name);
-      
-      Navigator.pop(context); // Close loading dialog
-      
-      final enteredCode = await _showVerificationDialog();
-      
-      if (enteredCode == verificationCode) {
-        await _performRegistration();
-      } else {
-        _showErrorSnackBar('รหัสยืนยันไม่ถูกต้อง');
-      }
-    } catch (e) {
-      Navigator.pop(context); // Close loading dialog if open
-      _showErrorSnackBar('ไม่สามารถส่งอีเมลยืนยันได้: ${e.toString()}');
-    }
-  }
-
   Future<void> _performLogin() async {
     try {
-      debugPrint('Attempting login with email: ${_emailController.text.trim()}');
-      
       final userProvider = context.read<UserProvider>();
       final success = await userProvider.login(
         _emailController.text.trim(),
         _passwordController.text,
       );
 
-      debugPrint('Login result: $success');
-
       if (success && mounted) {
-        debugPrint('Login successful, navigating to main screen');
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const MainScreen()),
         );
       } else if (mounted) {
-        debugPrint('Login failed, showing error');
-        _showErrorSnackBar('ลองใหม่อีกครั้ง หรือใช้: test@greenpoint.com / 123456');
+        _showErrorSnackBar('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
       }
-    } catch (e, stackTrace) {
-      debugPrint('Login error: $e');
-      debugPrint('Stack trace: $stackTrace');
+    } catch (e) {
       _showErrorSnackBar('เกิดข้อผิดพลาด: $e');
     }
   }
@@ -425,12 +392,33 @@ class _AuthScreenState extends State<AuthScreen> {
     }
   }
 
+  void _showErrorSnackBar(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: GoogleFonts.kanit()),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
+  void _showSuccessSnackBar(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: GoogleFonts.kanit()),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
+
   Future<void> _handleGoogleSignIn() async {
     try {
       _showLoadingDialog('กำลังเข้าสู่ระบบด้วย Google...');
       
       final result = await GoogleAuthService.signInWithGoogle();
       
+      if (!mounted) return;
       Navigator.pop(context); // Close loading dialog
       
       if (result == null) {
@@ -438,16 +426,20 @@ class _AuthScreenState extends State<AuthScreen> {
         return;
       }
       
+      if (result['error'] != null) {
+        _showErrorSnackBar('Google Sign-In Error: ${result['error']} - ${result['message']}');
+        return;
+      }
+      
       if (result['cancelled'] == true) {
-        // User cancelled, don't show error
         return;
       }
       
       if (mounted) {
+        // ใช้ UserProvider สำหรับ Google Sign-In
         final userProvider = context.read<UserProvider>();
         
-        debugPrint('Google Sign-In result: $result');
-        
+        // เข้าสู่ระบบด้วย Google data
         final success = await userProvider.loginWithGoogle(
           result['name'] ?? 'Google User',
           result['email'] ?? '',
@@ -465,58 +457,11 @@ class _AuthScreenState extends State<AuthScreen> {
         }
       }
     } catch (e) {
-      Navigator.pop(context); // Close loading dialog if open
-      _showErrorSnackBar('เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย Google');
+      if (mounted) {
+        Navigator.pop(context); // Close loading dialog if open
+        _showErrorSnackBar('เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย Google');
+      }
     }
-  }
-
-  Future<String?> _showVerificationDialog() async {
-    final codeController = TextEditingController();
-    
-    return showDialog<String>(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(
-          'ยืนยันอีเมล',
-          style: GoogleFonts.kanit(fontWeight: FontWeight.bold),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'กรุณากรอกรหัสยืนยัน 6 หลักที่ส่งไปยังอีเมลของคุณ',
-              style: GoogleFonts.kanit(),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: codeController,
-              keyboardType: TextInputType.number,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.kanit(fontSize: 24, letterSpacing: 8),
-              decoration: InputDecoration(
-                hintText: '000000',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              maxLength: 6,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, null),
-            child: Text('ยกเลิก', style: GoogleFonts.kanit()),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, codeController.text),
-            child: Text('ยืนยัน', style: GoogleFonts.kanit()),
-          ),
-        ],
-      ),
-    );
   }
 
   void _showLoadingDialog(String message) {
@@ -536,24 +481,6 @@ class _AuthScreenState extends State<AuthScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message, style: GoogleFonts.kanit()),
-        backgroundColor: Colors.red,
-      ),
-    );
-  }
-
-  void _showSuccessSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message, style: GoogleFonts.kanit()),
-        backgroundColor: Colors.green,
       ),
     );
   }

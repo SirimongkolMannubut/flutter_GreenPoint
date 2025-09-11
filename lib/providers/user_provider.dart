@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
 import '../services/storage_service.dart';
 import '../services/analytics_service.dart';
@@ -15,6 +16,7 @@ class UserProvider with ChangeNotifier {
   int get plasticReduced => _user?.plasticReduced ?? 0;
   int get level => _user?.level ?? 1;
   String get levelName => _getLevelName(level);
+  String get userId => _user?.id ?? '';
 
   void setLoading(bool loading) {
     _isLoading = loading;
@@ -66,6 +68,7 @@ class UserProvider with ChangeNotifier {
         _user = User.fromJson(matchingUser);
         await StorageService.setCurrentUser(matchingUser);
         await AnalyticsService.incrementLogin();
+        notifyListeners(); // แจ้งให้ UI อัปเดต
         return true;
       } else {
         debugPrint('Login failed: No matching user found');
@@ -89,6 +92,7 @@ class UserProvider with ChangeNotifier {
           _user = User.fromJson(tempUser);
           await StorageService.addUser(tempUser);
           await StorageService.setCurrentUser(tempUser);
+          notifyListeners(); // แจ้งให้ UI อัปเดต
           return true;
         }
         
@@ -103,13 +107,19 @@ class UserProvider with ChangeNotifier {
     }
   }
 
+  String _generateUserId() {
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final random = (timestamp % 10000).toString().padLeft(4, '0');
+    return 'GP${timestamp.toString().substring(8)}$random';
+  }
+
   Future<void> _initializeDemoUsers() async {
     try {
       final allUsers = await StorageService.getAllUsers();
       if (allUsers.isEmpty) {
         // Add demo user
         final demoUser = {
-          'id': 'demo_user_1',
+          'id': _generateUserId(),
           'name': 'ผู้ใช้ทดสอบ',
           'email': 'test@greenpoint.com',
           'password': '123456',
@@ -142,7 +152,7 @@ class UserProvider with ChangeNotifier {
       }
       
       _user = User(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        id: _generateUserId(),
         name: name,
         email: email,
         totalPoints: 0,
@@ -160,6 +170,7 @@ class UserProvider with ChangeNotifier {
       await StorageService.setCurrentUser(userDataWithPassword);
       await AnalyticsService.incrementUserCount();
       await AnalyticsService.incrementRegistration();
+      notifyListeners(); // แจ้งให้ UI อัปเดต
       
       return true;
     } catch (e) {
@@ -205,6 +216,7 @@ class UserProvider with ChangeNotifier {
       }
       
       await AnalyticsService.incrementLogin();
+      notifyListeners(); // แจ้งให้ UI อัปเดต
       return true;
     } catch (e) {
       debugPrint('Google login error: $e');
@@ -315,7 +327,9 @@ class UserProvider with ChangeNotifier {
 
   Future<void> logout() async {
     _user = null;
-    await StorageService.clearAll();
+    // ลบเฉพาะ current user ไม่ลบข้อมูลผู้ใช้ทั้งหมด
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('user_data');
     notifyListeners();
   }
 

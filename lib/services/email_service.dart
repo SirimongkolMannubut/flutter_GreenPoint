@@ -4,7 +4,7 @@ import 'dart:math';
 
 class EmailService {
   static const String _senderEmail = 'greenpoint.app@gmail.com';
-  static const String _senderPassword = 'your_app_password'; // ใช้ App Password จาก Gmail
+  static const String _senderPassword = 'YOUR_16_DIGIT_APP_PASSWORD'; // แทนที่ด้วย App Password 16 หลักจาก Gmail
   
   static Future<String> sendVerificationCode(String recipientEmail, String userName) async {
     final verificationCode = _generateVerificationCode();

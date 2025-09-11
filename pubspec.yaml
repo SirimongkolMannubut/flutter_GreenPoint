@@ -36,6 +36,7 @@ dependencies:
   
   # Email Service
   mailer: ^6.0.1
+  firebase_auth: ^4.15.3
 
 
 dev_dependencies:

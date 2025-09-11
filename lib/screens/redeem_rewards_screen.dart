@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import '../providers/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../constants/app_constants.dart';
-import '../providers/user_provider.dart';
+import '../providers/api_user_provider.dart';
 import '../widgets/common_app_bar.dart';
 
 class RedeemRewardsScreen extends StatefulWidget {
@@ -23,12 +24,12 @@ class _RedeemRewardsScreenState extends State<RedeemRewardsScreen> {
       backgroundColor: Colors.grey[50],
       appBar: const CommonAppBar(title: 'แลกของรางวัล'),
       body: Consumer<UserProvider>(
-        builder: (context, userProvider, child) {
+        builder: (context, UserProvider, child) {
           return Column(
             children: [
-              _buildPointsHeader(userProvider),
+              _buildPointsHeader(UserProvider),
               _buildCategoryFilter(),
-              Expanded(child: _buildRewardsList(userProvider)),
+              Expanded(child: _buildRewardsList(UserProvider)),
             ],
           );
         },
@@ -36,7 +37,7 @@ class _RedeemRewardsScreenState extends State<RedeemRewardsScreen> {
     );
   }
 
-  Widget _buildPointsHeader(UserProvider userProvider) {
+  Widget _buildPointsHeader(UserProvider UserProvider) {
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(20),
@@ -69,7 +70,7 @@ class _RedeemRewardsScreenState extends State<RedeemRewardsScreen> {
                   ),
                 ),
                 Text(
-                  '${userProvider.totalPoints} แต้ม',
+                  '${UserProvider.totalPoints} แต้ม',
                   style: GoogleFonts.kanit(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -86,7 +87,7 @@ class _RedeemRewardsScreenState extends State<RedeemRewardsScreen> {
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              'Level ${userProvider.level}',
+              'Level ${UserProvider.level}',
               style: GoogleFonts.kanit(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,

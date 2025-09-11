@@ -1,5 +1,6 @@
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 
 class GoogleAuthService {
   static final GoogleSignIn _googleSignIn = GoogleSignIn(
@@ -9,6 +10,9 @@ class GoogleAuthService {
   static Future<Map<String, dynamic>?> signInWithGoogle() async {
     try {
       debugPrint('Starting Google Sign-In process');
+      
+      // ล้าง cache ก่อน
+      await _googleSignIn.signOut();
       
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       
@@ -24,7 +28,6 @@ class GoogleAuthService {
       debugPrint('Access Token: ${googleAuth.accessToken != null ? 'Available' : 'Null'}');
       debugPrint('ID Token: ${googleAuth.idToken != null ? 'Available' : 'Null'}');
       
-      // Return user data directly without Firebase for now
       return {
         'name': googleUser.displayName ?? 'Google User',
         'email': googleUser.email,
@@ -33,9 +36,13 @@ class GoogleAuthService {
         'cancelled': false,
         'hasTokens': googleAuth.accessToken != null && googleAuth.idToken != null,
       };
+    } on PlatformException catch (e) {
+      debugPrint('Google Sign-In PlatformException: ${e.code} - ${e.message}');
+      debugPrint('Details: ${e.details}');
+      return {'error': e.code, 'message': e.message};
     } catch (e) {
       debugPrint('Google Sign-In Error: $e');
-      return null;
+      return {'error': 'unknown', 'message': e.toString()};
     }
   }
 

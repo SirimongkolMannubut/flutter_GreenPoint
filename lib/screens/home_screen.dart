@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../providers/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -9,6 +10,7 @@ import '../constants/app_constants.dart';
 import '../widgets/common_app_bar.dart';
 import '../widgets/custom_qr_icon.dart';
 import 'qr_scanner_screen.dart';
+import 'partner_stores_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -273,6 +275,13 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _showStores() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const PartnerStoresScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -357,13 +366,26 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  'สวัสดี, ${userProvider.user?.name ?? 'ขวัญ'}!',
-                  style: GoogleFonts.kanit(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'สวัสดี, ${userProvider.user?.name ?? 'ขวัญ'}!',
+                      style: GoogleFonts.kanit(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Text(
+                      'ID: ${userProvider.userId}',
+                      style: GoogleFonts.kanit(
+                        fontSize: 11,
+                        color: Colors.white.withOpacity(0.7),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -437,7 +459,7 @@ class _HomeScreenState extends State<HomeScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         _buildShortcutItemWithCustomIcon('Scan QR', () => _showScanOptions(context)),
-        _buildShortcutItem('ร้านค้า', Icons.store, () {}, '🏪'),
+        _buildShortcutItem('ร้านค้า', Icons.store, () => _showStores(), '🏪'),
         _buildShortcutItem('แลกของ', Icons.card_giftcard, () {}, '🎁'),
       ],
     ).animate().fadeIn(duration: 600.ms, delay: 200.ms);

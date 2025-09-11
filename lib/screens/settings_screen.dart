@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import '../providers/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 import '../providers/settings_provider.dart';
-import '../providers/user_provider.dart';
+import '../providers/api_user_provider.dart';
 import '../constants/app_constants.dart';
 import '../widgets/common_app_bar.dart';
 import 'language_screen.dart';
@@ -152,7 +153,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildUserCard() {
     return Consumer<UserProvider>(
-      builder: (context, userProvider, child) {
+      builder: (context, UserProvider, child) {
         return Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
@@ -189,7 +190,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      userProvider.user?.name ?? 'ผู้ใช้งาน',
+                      UserProvider.user?.name ?? 'ผู้ใช้งาน',
                       style: GoogleFonts.kanit(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -197,7 +198,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ),
                     Text(
-                      userProvider.user?.email ?? '',
+                      UserProvider.user?.email ?? '',
                       style: GoogleFonts.kanit(
                         fontSize: 14,
                         color: Colors.white70,
@@ -205,7 +206,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Level ${userProvider.level} • ${userProvider.totalPoints} แต้ม',
+                      'Level ${UserProvider.level} • ${UserProvider.totalPoints} แต้ม',
                       style: GoogleFonts.kanit(
                         fontSize: 12,
                         color: Colors.white70,
@@ -352,7 +353,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: () => _showResetDialog(settingsProvider),
           ),
           Consumer<UserProvider>(
-            builder: (context, userProvider, child) {
+            builder: (context, UserProvider, child) {
               return ListTile(
                 leading: Container(
                   padding: const EdgeInsets.all(8),
@@ -384,7 +385,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Icons.chevron_right,
                   color: Colors.red,
                 ),
-                onTap: () => _showLogoutDialog(userProvider, settingsProvider),
+                onTap: () => _showLogoutDialog(UserProvider, settingsProvider),
               );
             },
           ),
@@ -613,7 +614,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _showLogoutDialog(UserProvider userProvider, SettingsProvider settingsProvider) {
+  void _showLogoutDialog(UserProvider UserProvider, SettingsProvider settingsProvider) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -642,7 +643,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              userProvider.logout();
+              UserProvider.logout();
               Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
             },
             style: ElevatedButton.styleFrom(

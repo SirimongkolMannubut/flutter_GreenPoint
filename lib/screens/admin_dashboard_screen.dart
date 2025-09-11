@@ -11,6 +11,8 @@ import 'admin_settings_screen.dart';
 import 'analytics_screen.dart';
 import 'feature_usage_screen.dart';
 import 'system_logs_screen.dart';
+import 'admin_add_points_screen.dart';
+import 'admin_add_store_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -252,7 +254,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget _buildMenuGrid(BuildContext context) {
     final menuItems = [
       {'title': 'จัดการผู้ใช้', 'icon': Icons.people, 'color': Colors.blue, 'screen': const UserManagementScreen()},
-      {'title': 'สถิติการใช้งาน', 'icon': Icons.analytics, 'color': Colors.green, 'screen': const AnalyticsScreen()},
+      {'title': 'เพิ่มแต้มผู้ใช้', 'icon': Icons.stars, 'color': Colors.amber, 'screen': const AdminAddPointsScreen()},
+      {'title': 'เพิ่มร้านค้า', 'icon': Icons.store, 'color': Colors.green, 'screen': const AdminAddStoreScreen()},
+      {'title': 'สถิติการใช้งาน', 'icon': Icons.analytics, 'color': Colors.indigo, 'screen': const AnalyticsScreen()},
       {'title': 'การใช้ฟีเจอร์', 'icon': Icons.bar_chart, 'color': Colors.purple, 'screen': const FeatureUsageScreen()},
       {'title': 'ล็อกระบบ', 'icon': Icons.history, 'color': Colors.orange, 'screen': const SystemLogsScreen()},
       {'title': 'การตั้งค่า', 'icon': Icons.settings, 'color': Colors.grey, 'screen': const AdminSettingsScreen()},
@@ -264,9 +268,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 1.2,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
+        childAspectRatio: 1.1,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
       ),
       itemCount: menuItems.length,
       itemBuilder: (context, index) {
