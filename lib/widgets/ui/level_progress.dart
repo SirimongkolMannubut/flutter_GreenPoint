@@ -4,163 +4,346 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../constants/app_constants.dart';
 
 class LevelProgress extends StatelessWidget {
-  final int level;
-  final String levelName;
-  final double progress;
+  final int currentPoints;
+  final bool showAnimation;
 
   const LevelProgress({
     super.key,
-    required this.level,
-    required this.levelName,
-    required this.progress,
+    required this.currentPoints,
+    this.showAnimation = true,
   });
 
   @override
   Widget build(BuildContext context) {
+    final levelData = _getLevelData(currentPoints);
+    
     return Container(
-      padding: const EdgeInsets.all(AppConstants.defaultPadding),
+      margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppConstants.defaultRadius),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            levelData['primaryColor'].withOpacity(0.1),
+            levelData['secondaryColor'].withOpacity(0.05),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: levelData['primaryColor'].withOpacity(0.3),
+          width: 2,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: levelData['primaryColor'].withOpacity(0.2),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            _buildLevelHeader(levelData),
+            const SizedBox(height: 20),
+            _buildProgressBar(levelData),
+            const SizedBox(height: 16),
+            _buildLevelInfo(levelData),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLevelHeader(Map<String, dynamic> levelData) {
+    return Row(
+      children: [
+        _buildLevelBadge(levelData),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildLevelIcon(),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'ระดับ $levelName',
-                      style: GoogleFonts.kanit(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppConstants.darkGreen,
-                      ),
+              Row(
+                children: [
+                  Text(
+                    'Level ${levelData['level']}',
+                    style: GoogleFonts.kanit(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: levelData['primaryColor'],
                     ),
-                    Text(
-                      _getNextLevelText(),
-                      style: GoogleFonts.kanit(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 8),
+                  if (levelData['level'] >= 5)
+                    Icon(
+                      Icons.star,
+                      color: Colors.amber,
+                      size: 20,
+                    ).animate(onPlay: (controller) => controller.repeat())
+                        .shimmer(duration: 1500.ms),
+                ],
               ),
               Text(
-                '${(progress * 100).toInt()}%',
+                levelData['description'],
                 style: GoogleFonts.kanit(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: AppConstants.primaryGreen,
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: LinearProgressIndicator(
-              value: progress,
-              backgroundColor: Colors.grey[200],
-              valueColor: AlwaysStoppedAnimation<Color>(
-                _getLevelColor(),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: levelData['primaryColor'],
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: levelData['primaryColor'].withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
               ),
-              minHeight: 8,
+            ],
+          ),
+          child: Text(
+            '${currentPoints} แต้ม',
+            style: GoogleFonts.kanit(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
             ),
-          ).animate()
-              .fadeIn(duration: 800.ms)
-              .slideX(begin: -1, end: 0),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLevelBadge(Map<String, dynamic> levelData) {
+    return Container(
+      width: 70,
+      height: 70,
+      decoration: BoxDecoration(
+        gradient: RadialGradient(
+          colors: [
+            levelData['primaryColor'],
+            levelData['secondaryColor'],
+          ],
+        ),
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: levelData['primaryColor'].withOpacity(0.4),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Icon(
+            levelData['icon'],
+            size: 35,
+            color: Colors.white,
+          ),
+          Positioned(
+            bottom: 8,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                '${levelData['level']}',
+                style: GoogleFonts.kanit(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: levelData['primaryColor'],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ).animate()
+        .scale(duration: 600.ms, curve: Curves.elasticOut)
+        .then()
+        .shimmer(duration: 2000.ms, delay: 1000.ms);
+  }
+
+  Widget _buildProgressBar(Map<String, dynamic> levelData) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '${levelData['currentLevelPoints']}',
+              style: GoogleFonts.kanit(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[600],
+              ),
+            ),
+            Text(
+              '${levelData['nextLevelPoints']}',
+              style: GoogleFonts.kanit(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Container(
+          height: 12,
+          decoration: BoxDecoration(
+            color: Colors.grey[200],
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: LinearProgressIndicator(
+              value: levelData['progress'],
+              backgroundColor: Colors.transparent,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                levelData['primaryColor'],
+              ),
+            ),
+          ),
+        ).animate()
+            .fadeIn(duration: 800.ms)
+            .slideX(begin: -1, end: 0, curve: Curves.easeOutBack),
+      ],
+    );
+  }
+
+  Widget _buildLevelInfo(Map<String, dynamic> levelData) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: levelData['primaryColor'].withOpacity(0.2),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.trending_up,
+            color: levelData['primaryColor'],
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              levelData['nextLevelText'],
+              style: GoogleFonts.kanit(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[700],
+              ),
+            ),
+          ),
+          if (levelData['level'] < 5)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: levelData['primaryColor'].withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                '+${levelData['pointsToNext']}',
+                style: GoogleFonts.kanit(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: levelData['primaryColor'],
+                ),
+              ),
+            ),
         ],
       ),
     );
   }
 
-  Widget _buildLevelIcon() {
-    IconData iconData;
-    Color iconColor;
-
-    switch (level) {
-      case 1:
-        iconData = Icons.military_tech;
-        iconColor = Colors.brown;
-        break;
-      case 2:
-        iconData = Icons.military_tech;
-        iconColor = Colors.grey;
-        break;
-      case 3:
-        iconData = Icons.military_tech;
-        iconColor = Colors.amber;
-        break;
-      case 4:
-        iconData = Icons.diamond;
-        iconColor = Colors.cyan;
-        break;
-      case 5:
-        iconData = Icons.diamond;
-        iconColor = Colors.blue;
-        break;
-      default:
-        iconData = Icons.military_tech;
-        iconColor = Colors.brown;
+  Map<String, dynamic> _getLevelData(int points) {
+    if (points < 100) {
+      return {
+        'level': 1,
+        'name': 'มือใหม่',
+        'description': 'เริ่มต้นการเดินทางสู่โลกสีเขียว',
+        'icon': Icons.eco,
+        'primaryColor': const Color(0xFF4CAF50),
+        'secondaryColor': const Color(0xFF8BC34A),
+        'currentLevelPoints': 0,
+        'nextLevelPoints': 100,
+        'progress': points / 100,
+        'pointsToNext': 100 - points,
+        'nextLevelText': 'อีก ${100 - points} แต้ม ถึงระดับ นักสู้สีเขียว',
+      };
+    } else if (points < 500) {
+      return {
+        'level': 2,
+        'name': 'นักสู้สีเขียว',
+        'description': 'กำลังสร้างผลกระทบเชิงบวก',
+        'icon': Icons.shield,
+        'primaryColor': const Color(0xFF2196F3),
+        'secondaryColor': const Color(0xFF03DAC6),
+        'currentLevelPoints': 100,
+        'nextLevelPoints': 500,
+        'progress': (points - 100) / 400,
+        'pointsToNext': 500 - points,
+        'nextLevelText': 'อีก ${500 - points} แต้ม ถึงระดับ ผู้พิทักษ์โลก',
+      };
+    } else if (points < 1500) {
+      return {
+        'level': 3,
+        'name': 'ผู้พิทักษ์โลก',
+        'description': 'ผู้นำการเปลี่ยนแปลงในชุมชน',
+        'icon': Icons.public,
+        'primaryColor': const Color(0xFFFF9800),
+        'secondaryColor': const Color(0xFFFFB74D),
+        'currentLevelPoints': 500,
+        'nextLevelPoints': 1500,
+        'progress': (points - 500) / 1000,
+        'pointsToNext': 1500 - points,
+        'nextLevelText': 'อีก ${1500 - points} แต้ม ถึงระดับ ฮีโร่สิ่งแวดล้อม',
+      };
+    } else if (points < 3000) {
+      return {
+        'level': 4,
+        'name': 'ฮีโร่สิ่งแวดล้อม',
+        'description': 'ผู้เปลี่ยนโลกด้วยพลังแห่งธรรมชาติ',
+        'icon': Icons.star,
+        'primaryColor': const Color(0xFF9C27B0),
+        'secondaryColor': const Color(0xFFBA68C8),
+        'currentLevelPoints': 1500,
+        'nextLevelPoints': 3000,
+        'progress': (points - 1500) / 1500,
+        'pointsToNext': 3000 - points,
+        'nextLevelText': 'อีก ${3000 - points} แต้ม ถึงระดับ ตำนานสีเขียว',
+      };
+    } else {
+      return {
+        'level': 5,
+        'name': 'ตำนานสีเขียว',
+        'description': 'ผู้ที่ได้รับการยกย่องสูงสุด',
+        'icon': Icons.diamond,
+        'primaryColor': const Color(0xFFE91E63),
+        'secondaryColor': const Color(0xFFF48FB1),
+        'currentLevelPoints': 3000,
+        'nextLevelPoints': 3000,
+        'progress': 1.0,
+        'pointsToNext': 0,
+        'nextLevelText': 'คุณได้ถึงระดับสูงสุดแล้ว! 🎉',
+      };
     }
-
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: iconColor.withOpacity(0.1),
-        shape: BoxShape.circle,
-      ),
-      child: Icon(
-        iconData,
-        size: 32,
-        color: iconColor,
-      ),
-    ).animate(onPlay: (controller) => controller.repeat())
-        .shimmer(duration: 2000.ms);
-  }
-
-  Color _getLevelColor() {
-    switch (level) {
-      case 1:
-        return Colors.brown;
-      case 2:
-        return Colors.grey;
-      case 3:
-        return Colors.amber;
-      case 4:
-        return Colors.cyan;
-      case 5:
-        return Colors.blue;
-      default:
-        return Colors.brown;
-    }
-  }
-
-  String _getNextLevelText() {
-    if (level >= 5) {
-      return 'คุณถึงระดับสูงสุดแล้ว!';
-    }
-
-    final nextLevels = ['Silver', 'Gold', 'Platinum', 'Diamond'];
-    final nextLevel = nextLevels[level - 1];
-    
-    final thresholds = [100, 500, 1000, 2500];
-    final nextThreshold = thresholds[level - 1];
-    
-    return 'อีก ${(nextThreshold * (1 - progress)).toInt()} แต้ม ถึง $nextLevel';
   }
 }

@@ -185,6 +185,67 @@ class ApiService {
     return false;
   }
 
+  // Admin Stats APIs
+  static Future<Map<String, dynamic>> getAdminStats() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/admin/stats'),
+        headers: _headers,
+      );
+      
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      }
+    } catch (e) {
+      print('Get admin stats API error: $e');
+    }
+    return {
+      'totalUsers': 0,
+      'totalPoints': 0,
+      'plasticReduced': 0.0,
+      'totalActivities': 0,
+      'qrScans': 0,
+      'profileUpdates': 0,
+      'settingsChanges': 0,
+      'loginCount': 0,
+      'registrationCount': 0,
+    };
+  }
+
+  // Generic API methods
+  static Future<Map<String, dynamic>> get(String endpoint) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl$endpoint'),
+        headers: _headers,
+      );
+      
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      }
+    } catch (e) {
+      print('GET API error: $e');
+    }
+    return {};
+  }
+
+  static Future<Map<String, dynamic>> post(String endpoint, Map<String, dynamic> data) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl$endpoint'),
+        headers: _headers,
+        body: json.encode(data),
+      );
+      
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return json.decode(response.body);
+      }
+    } catch (e) {
+      print('POST API error: $e');
+    }
+    return {};
+  }
+
   static void logout() {
     _token = null;
   }

@@ -16,6 +16,8 @@ class UserProvider with ChangeNotifier {
   int get level => _user?.level ?? 1;
   String get levelName => _getLevelName(level);
   String get userId => _user?.id ?? '';
+  int get totalActivities => _user?.totalActivities ?? 0;
+  int get qrScans => _user?.qrScans ?? 0;
 
   void setLoading(bool loading) {
     _isLoading = loading;

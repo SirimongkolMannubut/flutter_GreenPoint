@@ -312,8 +312,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   _buildShortcutMenu(),
                   const SizedBox(height: 20),
                   _buildPromotionBanner(),
-                  const SizedBox(height: 20),
-                  _buildCollectionCards(),
                 ],
               ),
             );
@@ -357,7 +355,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Text('👋', style: TextStyle(fontSize: 24)),
+                child: RankBadge(
+                  level: userProvider.level,
+                  size: 32,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -411,36 +412,21 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          const SizedBox(height: 8),
+          Row(
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Level ${userProvider.level} ${userProvider.levelName}',
-                    style: GoogleFonts.kanit(
-                      fontSize: 14,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    '${(userProvider.getLevelProgress() * 1000).toInt()}/1000',
-                    style: GoogleFonts.kanit(
-                      fontSize: 14,
-                      color: Colors.white70,
-                    ),
-                  ),
-                ],
+              Icon(
+                Icons.eco,
+                color: Colors.white70,
+                size: 16,
               ),
-              const SizedBox(height: 8),
-              LinearProgressIndicator(
-                value: userProvider.getLevelProgress(),
-                backgroundColor: Colors.white30,
-                valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                minHeight: 6,
+              const SizedBox(width: 8),
+              Text(
+                'พลาสติกที่ลดได้: ${userProvider.plasticReduced.toStringAsFixed(1)} กรัม',
+                style: GoogleFonts.kanit(
+                  fontSize: 12,
+                  color: Colors.white70,
+                ),
               ),
             ],
           ),
@@ -618,78 +604,5 @@ class _HomeScreenState extends State<HomeScreen> {
     ).animate().fadeIn(duration: 600.ms, delay: 400.ms);
   }
 
-  Widget _buildCollectionCards() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'การ์ดสะสม',
-          style: GoogleFonts.kanit(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: AppConstants.darkGreen,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _buildCollectionCard('🌱', 'ใบไม้', Colors.green),
-            _buildCollectionCard('🌍', 'โลก', Colors.blue),
-            _buildCollectionCard('☕', 'กาแฟ', Colors.brown),
-          ],
-        ),
-      ],
-    ).animate().fadeIn(duration: 600.ms, delay: 600.ms);
-  }
 
-  Widget _buildCollectionCard(String emoji, String title, Color color) {
-    return Container(
-      width: 100,
-      height: 130,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.2),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  color.withOpacity(0.1),
-                  color.withOpacity(0.05),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Text(
-              emoji,
-              style: const TextStyle(fontSize: 28),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            title,
-            style: GoogleFonts.kanit(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
 }

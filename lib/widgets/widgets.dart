@@ -12,3 +12,5 @@ export 'cards/stats_overview.dart';
 export 'ui/custom_qr_icon.dart';
 export 'ui/level_progress.dart';
 export 'ui/activity_grid.dart';
+export 'ui/achievement_badge.dart';
+export 'ui/rank_badge.dart';

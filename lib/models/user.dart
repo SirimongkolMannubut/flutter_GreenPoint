@@ -9,6 +9,8 @@ class User {
   final int level;
   final DateTime joinDate;
   final List<String> achievements;
+  final int totalActivities;
+  final int qrScans;
 
   User({
     required this.id,
@@ -21,6 +23,8 @@ class User {
     required this.level,
     required this.joinDate,
     required this.achievements,
+    this.totalActivities = 0,
+    this.qrScans = 0,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -40,6 +44,8 @@ class User {
         achievements: json['achievements'] != null 
             ? List<String>.from(json['achievements'])
             : [],
+        totalActivities: int.tryParse(json['totalActivities']?.toString() ?? '0') ?? 0,
+        qrScans: int.tryParse(json['qrScans']?.toString() ?? '0') ?? 0,
       );
     } catch (e) {
       print('Error parsing user from JSON: $e');
@@ -54,6 +60,8 @@ class User {
         level: 1,
         joinDate: DateTime.now(),
         achievements: [],
+        totalActivities: 0,
+        qrScans: 0,
       );
     }
   }
@@ -70,6 +78,8 @@ class User {
       'level': level,
       'joinDate': joinDate.toIso8601String(),
       'achievements': achievements,
+      'totalActivities': totalActivities,
+      'qrScans': qrScans,
     };
   }
 
@@ -84,6 +94,8 @@ class User {
     int? level,
     DateTime? joinDate,
     List<String>? achievements,
+    int? totalActivities,
+    int? qrScans,
   }) {
     return User(
       id: id ?? this.id,
@@ -96,6 +108,8 @@ class User {
       level: level ?? this.level,
       joinDate: joinDate ?? this.joinDate,
       achievements: achievements ?? this.achievements,
+      totalActivities: totalActivities ?? this.totalActivities,
+      qrScans: qrScans ?? this.qrScans,
     );
   }
 }
