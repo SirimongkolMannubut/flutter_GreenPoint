@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../widgets/widgets.dart';
 import '../../constants/app_constants.dart';
-import '../../services/services.dart';
+import '../../services/data/storage_service.dart';
 
 class UserManagementScreen extends StatefulWidget {
   const UserManagementScreen({super.key});
@@ -29,11 +29,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     });
     
     try {
-      final users = await ApiService.getAllUsers();
+      final users = await StorageService.getAllUsers();
       setState(() {
         _users = users.map((user) => {
           ...user,
-          'level': _getUserLevel(user['points'] ?? 0),
+          'level': _getUserLevel(user['totalPoints'] ?? 0),
           'isActive': user['isActive'] ?? true,
         }).toList();
         _isLoading = false;
@@ -179,14 +179,14 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
-                                        '${user['points'] ?? 0} แต้ม',
+                                        '${user['totalPoints'] ?? 0} แต้ม',
                                         style: GoogleFonts.kanit(
                                           fontSize: 12,
                                           color: Colors.grey[600],
                                         ),
                                       ),
                                       const SizedBox(width: 8),
-                                      if (user['userId'] != null)
+                                      if (user['id'] != null)
                                         Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                           decoration: BoxDecoration(
@@ -194,7 +194,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                             borderRadius: BorderRadius.circular(8),
                                           ),
                                           child: Text(
-                                            'ID: ${user['userId']}',
+                                            'ID: ${user['id']}',
                                             style: GoogleFonts.kanit(
                                               fontSize: 10,
                                               color: Colors.blue,
@@ -254,15 +254,12 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           children: [
             _buildDetailRow('ชื่อ:', user['name'] ?? 'ไม่ระบุ'),
             _buildDetailRow('อีเมล:', user['email'] ?? 'ไม่ระบุ'),
-            _buildDetailRow('User ID:', user['userId'] ?? 'ไม่ระบุ'),
-            _buildDetailRow('แต้ม:', '${user['points'] ?? 0} แต้ม'),
+            _buildDetailRow('User ID:', user['id'] ?? 'ไม่ระบุ'),
+            _buildDetailRow('แต้ม:', '${user['totalPoints'] ?? 0} แต้ม'),
             _buildDetailRow('เลเวล:', user['level'] ?? 'Bronze'),
             _buildDetailRow('พลาสติกที่ลด:', '${user['plasticReduced'] ?? 0} กรัม'),
-            _buildDetailRow('วันที่สมัคร:', user['createdAt'] != null 
-                ? user['createdAt'].toString().substring(0, 10) 
-                : 'ไม่ระบุ'),
-            _buildDetailRow('อัปเดตล่าสุด:', user['updatedAt'] != null 
-                ? user['updatedAt'].toString().substring(0, 10) 
+            _buildDetailRow('วันที่สมัคร:', user['joinDate'] != null 
+                ? user['joinDate'].toString().substring(0, 10) 
                 : 'ไม่ระบุ'),
             _buildDetailRow('สถานะ:', user['isActive'] ? 'ใช้งาน' : 'ระงับ'),
           ],
@@ -297,6 +294,4 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       ),
     );
   }
-
-
 }

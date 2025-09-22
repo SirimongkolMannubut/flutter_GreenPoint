@@ -14,7 +14,7 @@ dependencies:
   shared_preferences: ^2.2.2
   provider: ^6.1.1
   http: ^1.1.2
-  flutter_dotenv: ^5.1.0
+
   intl: ^0.19.0
   flutter_animate: ^4.5.0
   lottie: ^3.0.0
@@ -34,9 +34,7 @@ dependencies:
   # Google Sign-In (standalone)
   google_sign_in: ^6.2.1
   
-  # Email Service
-  mailer: ^6.0.1
-  firebase_auth: ^4.15.3
+
 
 
 dev_dependencies:
@@ -50,7 +48,6 @@ flutter:
     - assets/
     - assets/images/
     - assets/animations/
-    - .env
   
 flutter_intl:
   enabled: true

@@ -5,7 +5,7 @@ import '../../providers/providers.dart';
 import '../../widgets/widgets.dart';
 import '../../constants/app_constants.dart';
 import '../../services/services.dart';
-import '../../services/data/api_service.dart';
+
 import 'user_management_screen.dart';
 import 'admin_settings_screen.dart';
 import '../analytics/analytics_screen.dart';
@@ -32,28 +32,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Future<void> _loadStats() async {
-    try {
-      final stats = await ApiService.getAdminStats();
-      setState(() {
-        _stats = stats;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _stats = {
-          'totalUsers': 0,
-          'totalPoints': 0,
-          'plasticReduced': 0.0,
-          'totalActivities': 0,
-          'qrScans': 0,
-          'profileUpdates': 0,
-          'settingsChanges': 0,
-          'loginCount': 0,
-          'registrationCount': 0,
-        };
-        _isLoading = false;
-      });
-    }
+    final stats = await AnalyticsService.getRealTimeStats();
+    setState(() {
+      _stats = stats;
+      _isLoading = false;
+    });
   }
 
   @override

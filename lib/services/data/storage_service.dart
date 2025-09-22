@@ -165,6 +165,82 @@ class StorageService {
     }
   }
 
+  static Future<List<dynamic>> getStores() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final storesData = prefs.getString('stores_data');
+      if (storesData != null) {
+        final List<dynamic> decoded = json.decode(storesData);
+        return decoded.map((store) => {
+          'id': store['id'] ?? '',
+          'name': store['name'] ?? '',
+          'description': store['description'] ?? '',
+          'category': store['category'] ?? 'ร้านค้าทั่วไป',
+          'address': store['address'] ?? '',
+          'phone': store['phone'] ?? '',
+          'imageUrl': store['imageUrl'] ?? '',
+          'rating': (store['rating'] ?? 4.0).toDouble(),
+          'distance': (store['distance'] ?? 0.0).toDouble(),
+          'isOpen': store['isOpen'] ?? true,
+          'tags': List<String>.from(store['tags'] ?? []),
+          'latitude': (store['latitude'] ?? 0.0).toDouble(),
+          'longitude': (store['longitude'] ?? 0.0).toDouble(),
+        }).toList();
+      }
+    } catch (e) {
+      print('Error getting stores: $e');
+    }
+    return _getDefaultStores();
+  }
+
+  static Future<bool> addStore(dynamic store) async {
+    try {
+      final stores = await getStores();
+      stores.add(store);
+      final prefs = await SharedPreferences.getInstance();
+      final storesJson = json.encode(stores);
+      return await prefs.setString('stores_data', storesJson);
+    } catch (e) {
+      print('Error adding store: $e');
+      return false;
+    }
+  }
+
+  static List<dynamic> _getDefaultStores() {
+    return [
+      {
+        'id': 'store_001',
+        'name': 'Green Café',
+        'description': 'คาเฟ่เพื่อสิ่งแวดล้อม ไม่ใช้ถุงพลาสติก',
+        'category': 'คาเฟ่',
+        'address': '123 ถนนสีเขียว เขตธรรมชาติ กรุงเทพฯ',
+        'phone': '02-123-4567',
+        'imageUrl': '',
+        'rating': 4.5,
+        'distance': 0.8,
+        'isOpen': true,
+        'tags': ['เป็นมิตรกับสิ่งแวดล้อม', 'ไม่ใช้พลาสติก', 'อาหารออร์แกนิค'],
+        'latitude': 13.7563,
+        'longitude': 100.5018,
+      },
+      {
+        'id': 'store_002',
+        'name': 'Eco Market',
+        'description': 'ซูเปอร์มาร์เก็ตสีเขียว สินค้าเป็นมิตรกับสิ่งแวดล้อม',
+        'category': 'ซูเปอร์มาร์เก็ต',
+        'address': '456 ถนนรีไซเคิล เขตสะอาด กรุงเทพฯ',
+        'phone': '02-234-5678',
+        'imageUrl': '',
+        'rating': 4.2,
+        'distance': 1.2,
+        'isOpen': true,
+        'tags': ['สินค้าออร์แกนิค', 'ถุงผ้า', 'รีไซเคิล'],
+        'latitude': 13.7463,
+        'longitude': 100.5118,
+      },
+    ];
+  }
+
   static Future<bool> clearAll() async {
     try {
       final prefs = await SharedPreferences.getInstance();

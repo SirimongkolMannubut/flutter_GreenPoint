@@ -17,7 +17,7 @@ class RankBadge extends StatefulWidget {
   State<RankBadge> createState() => _RankBadgeState();
 }
 
-class _RankBadgeState extends State<RankBadge>
+ class _RankBadgeState extends State<RankBadge>
     with TickerProviderStateMixin {
   late AnimationController _rotationController;
   late AnimationController _pulseController;

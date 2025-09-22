@@ -1,96 +1,85 @@
 import 'package:flutter/material.dart';
-import 'api_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AnalyticsService {
+  static const String _userCountKey = 'total_users';
+  static const String _pointsKey = 'total_points';
+  static const String _plasticKey = 'total_plastic_reduced';
+  static const String _activitiesKey = 'total_activities';
+  static const String _qrScansKey = 'total_qr_scans';
+  static const String _profileUpdatesKey = 'profile_updates';
+  static const String _settingsChangesKey = 'settings_changes';
+  static const String _loginCountKey = 'login_count';
+  static const String _registrationCountKey = 'registration_count';
+
   static Future<Map<String, dynamic>> getRealTimeStats() async {
-    try {
-      final response = await ApiService.get('/admin/stats');
-      return response;
-    } catch (e) {
-      return {
-        'totalUsers': 0,
-        'totalPoints': 0,
-        'plasticReduced': 0.0,
-        'totalActivities': 0,
-        'qrScans': 0,
-        'profileUpdates': 0,
-        'settingsChanges': 0,
-        'loginCount': 0,
-        'registrationCount': 0,
-      };
-    }
+    final prefs = await SharedPreferences.getInstance();
+    
+    return {
+      'totalUsers': prefs.getInt(_userCountKey) ?? 0,
+      'totalPoints': prefs.getInt(_pointsKey) ?? 0,
+      'plasticReduced': prefs.getDouble(_plasticKey) ?? 0.0,
+      'totalActivities': prefs.getInt(_activitiesKey) ?? 0,
+      'qrScans': prefs.getInt(_qrScansKey) ?? 0,
+      'profileUpdates': prefs.getInt(_profileUpdatesKey) ?? 0,
+      'settingsChanges': prefs.getInt(_settingsChangesKey) ?? 0,
+      'loginCount': prefs.getInt(_loginCountKey) ?? 0,
+      'registrationCount': prefs.getInt(_registrationCountKey) ?? 0,
+    };
   }
 
   static Future<void> incrementUserCount() async {
-    try {
-      await ApiService.post('/admin/stats/increment', {'type': 'users'});
-    } catch (e) {
-      print('Error incrementing user count: $e');
-    }
+    final prefs = await SharedPreferences.getInstance();
+    final current = prefs.getInt(_userCountKey) ?? 0;
+    await prefs.setInt(_userCountKey, current + 1);
   }
 
   static Future<void> addPoints(int points) async {
-    try {
-      await ApiService.post('/admin/stats/add-points', {'points': points});
-    } catch (e) {
-      print('Error adding points: $e');
-    }
+    final prefs = await SharedPreferences.getInstance();
+    final current = prefs.getInt(_pointsKey) ?? 0;
+    await prefs.setInt(_pointsKey, current + points);
   }
 
   static Future<void> addPlasticReduced(double amount) async {
-    try {
-      await ApiService.post('/admin/stats/add-plastic', {'amount': amount});
-    } catch (e) {
-      print('Error adding plastic reduced: $e');
-    }
+    final prefs = await SharedPreferences.getInstance();
+    final current = prefs.getDouble(_plasticKey) ?? 0.0;
+    await prefs.setDouble(_plasticKey, current + amount);
   }
 
   static Future<void> incrementActivity() async {
-    try {
-      await ApiService.post('/admin/stats/increment', {'type': 'activities'});
-    } catch (e) {
-      print('Error incrementing activity: $e');
-    }
+    final prefs = await SharedPreferences.getInstance();
+    final current = prefs.getInt(_activitiesKey) ?? 0;
+    await prefs.setInt(_activitiesKey, current + 1);
   }
 
   static Future<void> incrementQRScan() async {
-    try {
-      await ApiService.post('/admin/stats/increment', {'type': 'qrScans'});
-    } catch (e) {
-      print('Error incrementing QR scan: $e');
-    }
+    final prefs = await SharedPreferences.getInstance();
+    final current = prefs.getInt(_qrScansKey) ?? 0;
+    await prefs.setInt(_qrScansKey, current + 1);
   }
 
   static Future<void> incrementProfileUpdate() async {
-    try {
-      await ApiService.post('/admin/stats/increment', {'type': 'profileUpdates'});
-    } catch (e) {
-      print('Error incrementing profile update: $e');
-    }
+    final prefs = await SharedPreferences.getInstance();
+    final current = prefs.getInt(_profileUpdatesKey) ?? 0;
+    await prefs.setInt(_profileUpdatesKey, current + 1);
   }
 
   static Future<void> incrementSettingsChange() async {
-    try {
-      await ApiService.post('/admin/stats/increment', {'type': 'settingsChanges'});
-    } catch (e) {
-      print('Error incrementing settings change: $e');
-    }
+    final prefs = await SharedPreferences.getInstance();
+    final current = prefs.getInt(_settingsChangesKey) ?? 0;
+    await prefs.setInt(_settingsChangesKey, current + 1);
   }
 
   static Future<void> incrementLogin() async {
-    try {
-      await ApiService.post('/admin/stats/increment', {'type': 'loginCount'});
-    } catch (e) {
-      print('Error incrementing login: $e');
-    }
+    final prefs = await SharedPreferences.getInstance();
+    final current = prefs.getInt(_loginCountKey) ?? 0;
+    await prefs.setInt(_loginCountKey, current + 1);
   }
 
   static Future<void> incrementRegistration() async {
-    try {
-      await ApiService.post('/admin/stats/increment', {'type': 'registrationCount'});
-    } catch (e) {
-      print('Error incrementing registration: $e');
-    }
+    final prefs = await SharedPreferences.getInstance();
+    final current = prefs.getInt(_registrationCountKey) ?? 0;
+    await prefs.setInt(_registrationCountKey, current + 1);
   }
 
   static Future<List<Map<String, dynamic>>> getFeatureUsage() async {

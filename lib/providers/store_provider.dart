@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../models/models.dart';
-import '../services/services.dart';
+import '../services/data/storage_service.dart';
 
 class StoreProvider with ChangeNotifier {
   List<PartnerStore> _stores = [];
@@ -33,8 +33,8 @@ class StoreProvider with ChangeNotifier {
     notifyListeners();
     
     try {
-      final stores = await ApiService.getStores();
-      _stores = stores;
+      final storesData = await StorageService.getStores();
+      _stores = storesData.map((store) => PartnerStore.fromJson(store)).toList();
       _filteredStores = List.from(_stores);
     } catch (e) {
       debugPrint('Error loading stores: $e');
@@ -52,13 +52,10 @@ class StoreProvider with ChangeNotifier {
 
   Future<bool> addStore(PartnerStore store) async {
     try {
-      final success = await ApiService.addStore(store);
-      if (success) {
-        _stores.add(store);
-        _filterStores();
-        return true;
-      }
-      return false;
+      await StorageService.addStore(store.toJson());
+      _stores.add(store);
+      _filterStores();
+      return true;
     } catch (e) {
       debugPrint('Error adding store: $e');
       return false;
