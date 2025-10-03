@@ -9,7 +9,10 @@ class AboutScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CommonAppBar(title: 'เกี่ยวกับแอป'),
+      appBar: const CommonAppBar(
+        title: 'เกี่ยวกับแอป',
+        showBackButton: true,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(

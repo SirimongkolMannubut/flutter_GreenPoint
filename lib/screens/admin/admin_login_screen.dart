@@ -20,6 +20,23 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
   bool _obscurePassword = true;
 
   @override
+  void initState() {
+    super.initState();
+    _loadSavedCredentials();
+  }
+
+  void _loadSavedCredentials() async {
+    final adminProvider = context.read<AdminProvider>();
+    await adminProvider.loadSavedCredentials();
+    if (adminProvider.savedEmail.isNotEmpty) {
+      _emailController.text = adminProvider.savedEmail;
+    }
+    if (adminProvider.savedPassword.isNotEmpty) {
+      _passwordController.text = adminProvider.savedPassword;
+    }
+  }
+
+  @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
@@ -28,12 +45,23 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
 
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
-      final success = await context.read<AdminProvider>().loginAdmin(
+      final adminProvider = context.read<AdminProvider>();
+      final success = await adminProvider.loginAdmin(
         _emailController.text.trim(),
         _passwordController.text,
       );
 
       if (success && mounted) {
+        // บันทึกข้อมูลถ้าติกจดจำ
+        if (adminProvider.rememberMe) {
+          await adminProvider.saveCredentials(
+            _emailController.text.trim(),
+            _passwordController.text,
+          );
+        } else {
+          await adminProvider.clearSavedCredentials();
+        }
+        
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const AdminDashboardScreen()),
         );
@@ -138,7 +166,30 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Consumer<AdminProvider>(
+                              builder: (context, adminProvider, child) {
+                                return Checkbox(
+                                  value: adminProvider.rememberMe,
+                                  onChanged: (value) {
+                                    adminProvider.setRememberMe(value ?? false);
+                                  },
+                                  activeColor: AppConstants.primaryGreen,
+                                );
+                              },
+                            ),
+                            Text(
+                              'จดจำรหัสผ่าน',
+                              style: GoogleFonts.kanit(
+                                color: AppConstants.darkGreen,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
                         Consumer<AdminProvider>(
                           builder: (context, adminProvider, child) {
                             if (adminProvider.error != null) {

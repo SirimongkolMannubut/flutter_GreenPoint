@@ -33,7 +33,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CommonAppBar(title: 'สถิติการใช้งาน'),
+      appBar: const CommonAppBar(
+        title: 'สถิติการใช้งาน',
+        showBackButton: true,
+      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(

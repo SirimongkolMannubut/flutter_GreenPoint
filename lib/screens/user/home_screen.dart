@@ -282,7 +282,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: true,
       appBar: CommonAppBar(
         title: 'หน้าหลัก',
         actions: [
@@ -303,16 +304,30 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             }
 
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  _buildProfileCard(userProvider),
-                  const SizedBox(height: 20),
-                  _buildShortcutMenu(),
-                  const SizedBox(height: 20),
-                  _buildPromotionBanner(),
-                ],
+            return Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    const Color(0xFF2E7D32).withOpacity(0.1),
+                    Colors.white,
+                    const Color(0xFFF1F8E9),
+                  ],
+                ),
+              ),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 100, 16, 16),
+                child: Column(
+                  children: [
+                    _buildProfileCard(userProvider),
+                    const SizedBox(height: 20),
+                    _buildShortcutMenu(),
+                    const SizedBox(height: 20),
+                    _buildPromotionBanner(),
+                    const SizedBox(height: 80),
+                  ],
+                ),
               ),
             );
           } catch (e) {
@@ -323,6 +338,19 @@ class _HomeScreenState extends State<HomeScreen> {
           }
         },
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _showScanOptions(context),
+        backgroundColor: const Color(0xFF2E7D32),
+        foregroundColor: Colors.white,
+        elevation: 8,
+        icon: CustomQRIcon(size: 20, color: Colors.white),
+        label: Text(
+          'สแกน QR',
+          style: GoogleFonts.kanit(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ).animate().scale(delay: 800.ms, duration: 400.ms),
     );
   }
 

@@ -9,7 +9,10 @@ class AdminSettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CommonAppBar(title: 'การตั้งค่าผู้ดูแล'),
+      appBar: const CommonAppBar(
+        title: 'การตั้งค่าผู้ดูแล',
+        showBackButton: true,
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

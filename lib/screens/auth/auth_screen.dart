@@ -25,6 +25,23 @@ class _AuthScreenState extends State<AuthScreen> {
   bool _isLogin = true;
 
   @override
+  void initState() {
+    super.initState();
+    _loadSavedCredentials();
+  }
+
+  void _loadSavedCredentials() async {
+    final userProvider = context.read<UserProvider>();
+    await userProvider.loadSavedCredentials();
+    if (userProvider.savedEmail.isNotEmpty) {
+      _emailController.text = userProvider.savedEmail;
+    }
+    if (userProvider.savedPassword.isNotEmpty) {
+      _passwordController.text = userProvider.savedPassword;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
@@ -220,6 +237,27 @@ class _AuthScreenState extends State<AuthScreen> {
                 return null;
               },
             ),
+            if (_isLogin) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Checkbox(
+                    value: context.watch<UserProvider>().rememberMe,
+                    onChanged: (value) {
+                      context.read<UserProvider>().setRememberMe(value ?? false);
+                    },
+                    activeColor: AppConstants.primaryGreen,
+                  ),
+                  Text(
+                    'จดจำรหัสผ่าน',
+                    style: GoogleFonts.kanit(
+                      color: AppConstants.darkGreen,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ],
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _handleAuth,
@@ -341,6 +379,16 @@ class _AuthScreenState extends State<AuthScreen> {
       );
 
       if (success && mounted) {
+        // บันทึกข้อมูลถ้าติกจดจำ
+        if (userProvider.rememberMe) {
+          await userProvider.saveCredentials(
+            _emailController.text.trim(),
+            _passwordController.text,
+          );
+        } else {
+          await userProvider.clearSavedCredentials();
+        }
+        
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const MainScreen()),

@@ -3,14 +3,21 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 import '../services/data/storage_service.dart';
 import '../services/data/analytics_service.dart';
+import '../services/api/user_api_service.dart';
 
 
 class UserProvider with ChangeNotifier {
   User? _user;
   bool _isLoading = false;
+  bool _rememberMe = false;
+  String _savedEmail = '';
+  String _savedPassword = '';
 
   User? get user => _user;
   bool get isLoading => _isLoading;
+  bool get rememberMe => _rememberMe;
+  String get savedEmail => _savedEmail;
+  String get savedPassword => _savedPassword;
   
   int get totalPoints => _user?.totalPoints ?? 0;
   int get plasticReduced => _user?.plasticReduced ?? 0;
@@ -45,64 +52,62 @@ class UserProvider with ChangeNotifier {
   Future<bool> login(String email, String password) async {
     setLoading(true);
     try {
-      debugPrint('Login attempt: $email');
-      
-      // Initialize demo users if no users exist
-      await _initializeDemoUsers();
-      
-      // Get all users from storage
-      final allUsers = await StorageService.getAllUsers();
-      debugPrint('Total users in storage: ${allUsers.length}');
-      
-      // Debug: Print all users (without passwords)
-      for (var user in allUsers) {
-        debugPrint('User: ${user['email']} - ${user['name']}');
+      // Try API login first
+      try {
+        final response = await UserApiService.login(email, password);
+        if (response['user'] != null) {
+          _user = User.fromJson(response['user']);
+          await StorageService.setCurrentUser(response['user']);
+          await AnalyticsService.incrementLogin();
+          notifyListeners();
+          return true;
+        }
+      } catch (apiError) {
+        debugPrint('API login failed: $apiError');
       }
       
-      // Find user with matching email and password
+      // Fallback to local storage
+      await _initializeDemoUsers();
+      final allUsers = await StorageService.getAllUsers();
+      
       final matchingUser = allUsers.firstWhere(
         (user) => user['email'] == email && user['password'] == password,
         orElse: () => <String, dynamic>{},
       );
       
       if (matchingUser.isNotEmpty) {
-        debugPrint('Login successful for: ${matchingUser['email']}');
         _user = User.fromJson(matchingUser);
         await StorageService.setCurrentUser(matchingUser);
         await AnalyticsService.incrementLogin();
-        notifyListeners(); // แจ้งให้ UI อัปเดต
+        notifyListeners();
         return true;
-      } else {
-        debugPrint('Login failed: No matching user found');
-        
-        // Fallback: Create temporary user for any login attempt
-        if (email.isNotEmpty && password.isNotEmpty) {
-          debugPrint('Creating temporary user for login');
-          final tempUser = {
-            'id': 'temp_${DateTime.now().millisecondsSinceEpoch}',
-            'name': 'ผู้ใช้ชั่วคราว',
-            'email': email,
-            'password': password,
-            'totalPoints': 0,
-            'plasticReduced': 0,
-            'level': 1,
-            'joinDate': DateTime.now().toIso8601String(),
-            'achievements': [],
-            'profileImagePath': '',
-          };
-          
-          _user = User.fromJson(tempUser);
-          await StorageService.addUser(tempUser);
-          await StorageService.setCurrentUser(tempUser);
-          notifyListeners(); // แจ้งให้ UI อัปเดต
-          return true;
-        }
-        
-        return false;
       }
-    } catch (e, stackTrace) {
-      debugPrint('Error logging in: $e');
-      debugPrint('Stack trace: $stackTrace');
+      
+      // Create temp user if login fails
+      if (email.isNotEmpty && password.isNotEmpty) {
+        final tempUser = {
+          'id': 'temp_${DateTime.now().millisecondsSinceEpoch}',
+          'name': 'ผู้ใช้ชั่วคราว',
+          'email': email,
+          'password': password,
+          'totalPoints': 0,
+          'plasticReduced': 0,
+          'level': 1,
+          'joinDate': DateTime.now().toIso8601String(),
+          'achievements': [],
+          'profileImagePath': '',
+        };
+        
+        _user = User.fromJson(tempUser);
+        await StorageService.addUser(tempUser);
+        await StorageService.setCurrentUser(tempUser);
+        notifyListeners();
+        return true;
+      }
+      
+      return false;
+    } catch (e) {
+      debugPrint('Login error: $e');
       return false;
     } finally {
       setLoading(false);
@@ -142,7 +147,23 @@ class UserProvider with ChangeNotifier {
   Future<bool> register(String name, String email, String password) async {
     setLoading(true);
     try {
-      // Check if user already exists
+      // Try API register first
+      try {
+        final response = await UserApiService.register(name, email, password);
+        if (response['user'] != null) {
+          _user = User.fromJson(response['user']);
+          await StorageService.setCurrentUser(response['user']);
+          await StorageService.addUser(response['user']);
+          await AnalyticsService.incrementUserCount();
+          await AnalyticsService.incrementRegistration();
+          notifyListeners();
+          return true;
+        }
+      } catch (apiError) {
+        debugPrint('API register failed: $apiError');
+      }
+      
+      // Fallback to local storage
       final allUsers = await StorageService.getAllUsers();
       final existingUser = allUsers.firstWhere(
         (user) => user['email'] == email,
@@ -150,7 +171,7 @@ class UserProvider with ChangeNotifier {
       );
       
       if (existingUser.isNotEmpty) {
-        return false; // User already exists
+        return false;
       }
       
       _user = User(
@@ -164,7 +185,6 @@ class UserProvider with ChangeNotifier {
         achievements: [],
       );
       
-      // Save user with password
       final userDataWithPassword = _user!.toJson();
       userDataWithPassword['password'] = password;
       
@@ -172,11 +192,11 @@ class UserProvider with ChangeNotifier {
       await StorageService.setCurrentUser(userDataWithPassword);
       await AnalyticsService.incrementUserCount();
       await AnalyticsService.incrementRegistration();
-      notifyListeners(); // แจ้งให้ UI อัปเดต
+      notifyListeners();
       
       return true;
     } catch (e) {
-      debugPrint('Error registering: $e');
+      debugPrint('Register error: $e');
       return false;
     } finally {
       setLoading(false);
@@ -327,11 +347,47 @@ class UserProvider with ChangeNotifier {
     return (currentPoints - currentThreshold) / (nextThreshold - currentThreshold);
   }
 
+  void setRememberMe(bool value) {
+    _rememberMe = value;
+    notifyListeners();
+  }
+
+  Future<void> saveCredentials(String email, String password) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('saved_email', email);
+    await prefs.setString('saved_password', password);
+    await prefs.setBool('remember_me', true);
+    _savedEmail = email;
+    _savedPassword = password;
+    _rememberMe = true;
+  }
+
+  Future<void> loadSavedCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    _rememberMe = prefs.getBool('remember_me') ?? false;
+    if (_rememberMe) {
+      _savedEmail = prefs.getString('saved_email') ?? '';
+      _savedPassword = prefs.getString('saved_password') ?? '';
+    }
+    notifyListeners();
+  }
+
+  Future<void> clearSavedCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('saved_email');
+    await prefs.remove('saved_password');
+    await prefs.remove('remember_me');
+    _savedEmail = '';
+    _savedPassword = '';
+    _rememberMe = false;
+  }
+
   Future<void> logout() async {
     _user = null;
     // ลบเฉพาะ current user ไม่ลบข้อมูลผู้ใช้ทั้งหมด
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('user_data');
+    // ไม่ลบข้อมูลจดจำเมื่อ logout
     notifyListeners();
   }
 

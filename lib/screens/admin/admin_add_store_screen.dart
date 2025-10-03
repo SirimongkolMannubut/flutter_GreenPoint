@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+
 import '../../constants/app_constants.dart';
 import '../../models/models.dart';
 import '../../providers/providers.dart';
 import '../../widgets/widgets.dart';
+import '../../widgets/ui/map_location_picker.dart';
+import '../../widgets/ui/simple_location_picker.dart';
+import '../../widgets/ui/location_search_picker.dart';
 
 class AdminAddStoreScreen extends StatefulWidget {
   const AdminAddStoreScreen({super.key});
@@ -28,6 +32,9 @@ class _AdminAddStoreScreenState extends State<AdminAddStoreScreen> {
   String _selectedEmoji = '🍽️';
   double _rating = 4.5;
   bool _isLoading = false;
+  double? _selectedLat;
+  double? _selectedLng;
+  String _locationAddress = 'ยังไม่ได้เลือกตำแหน่ง';
 
   final List<String> _categories = [
     'ร้านอาหาร', 'ร้านกาแฟ', 'ร้านค้าทั่วไป', 'ซูเปอร์มาร์เก็ต', 
@@ -68,8 +75,8 @@ class _AdminAddStoreScreenState extends State<AdminAddStoreScreen> {
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim(),
         address: _addressController.text.trim(),
-        latitude: 13.7563,
-        longitude: 100.5018,
+        latitude: _selectedLat ?? 13.7563,
+        longitude: _selectedLng ?? 100.5018,
         phone: _phoneController.text.trim(),
         imageUrl: '',
         openHours: _openHoursController.text.trim(),
@@ -147,7 +154,10 @@ class _AdminAddStoreScreenState extends State<AdminAddStoreScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: const CommonAppBar(title: 'เพิ่มร้านค้าพาร์ทเนอร์'),
+      appBar: const CommonAppBar(
+        title: 'เพิ่มร้านค้าพาร์ทเนอร์',
+        showBackButton: true,
+      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Form(
@@ -284,6 +294,8 @@ class _AdminAddStoreScreenState extends State<AdminAddStoreScreen> {
               validator: (value) => value?.isEmpty == true ? 'กรุณาใส่ที่อยู่' : null,
             ),
             const SizedBox(height: 16),
+            _buildLocationPicker(),
+            const SizedBox(height: 16),
             TextFormField(
               controller: _phoneController,
               decoration: InputDecoration(
@@ -400,6 +412,135 @@ class _AdminAddStoreScreenState extends State<AdminAddStoreScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildLocationPicker() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey[300]!),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.location_on, color: AppConstants.primaryGreen),
+              const SizedBox(width: 8),
+              Text(
+                'ตำแหน่งร้านค้า',
+                style: GoogleFonts.kanit(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _locationAddress,
+            style: GoogleFonts.kanit(
+              color: Colors.grey[600],
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text('เลือกวิธีระบุตำแหน่ง', style: GoogleFonts.kanit()),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('เลือกวิธีที่ต้องการใช้ในการระบุตำแหน่งร้านค้า', style: GoogleFonts.kanit()),
+                        const SizedBox(height: 8),
+                        Text('ค้นหาสถานที่: พิมพ์ชื่อสถานที่', style: GoogleFonts.kanit(fontSize: 12, color: Colors.grey[600])),
+                      ],
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => LocationSearchPicker(
+                                onLocationSelected: (lat, lng, address) {
+                                  setState(() {
+                                    _selectedLat = lat;
+                                    _selectedLng = lng;
+                                    _locationAddress = address;
+                                  });
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                        child: Text('ค้นหาสถานที่', style: GoogleFonts.kanit()),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => SimpleLocationPicker(
+                                onLocationSelected: (lat, lng, address) {
+                                  setState(() {
+                                    _selectedLat = lat;
+                                    _selectedLng = lng;
+                                    _locationAddress = address;
+                                  });
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                        child: Text('ใส่พิกัดเอง', style: GoogleFonts.kanit()),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => MapLocationPicker(
+                                onLocationSelected: (latLng, address) {
+                                  setState(() {
+                                    _selectedLat = latLng.latitude;
+                                    _selectedLng = latLng.longitude;
+                                    _locationAddress = address;
+                                  });
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                        child: Text('ใช้แผนที่', style: GoogleFonts.kanit()),
+                      ),
+                    ],
+                  ),
+                );
+              },
+              icon: const Icon(Icons.map),
+              label: Text(
+                _selectedLat == null ? 'ระบุตำแหน่งร้านค้า' : 'เปลี่ยนตำแหน่ง',
+                style: GoogleFonts.kanit(),
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppConstants.primaryGreen,
+                side: BorderSide(color: AppConstants.primaryGreen),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

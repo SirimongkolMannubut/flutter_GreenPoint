@@ -8,6 +8,7 @@ export 'user/main_screen.dart';
 export 'user/profile_screen.dart';
 export 'user/qr_scanner_screen.dart';
 export 'user/partner_stores_screen.dart';
+export 'user/stores_map_screen.dart';
 export 'user/add_waste_screen.dart';
 export 'user/waste_calendar_screen.dart';
 

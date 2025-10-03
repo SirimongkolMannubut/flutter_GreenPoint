@@ -44,7 +44,10 @@ class _SystemLogsScreenState extends State<SystemLogsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CommonAppBar(title: 'ล็อกระบบ'),
+      appBar: const CommonAppBar(
+        title: 'ล็อกระบบ',
+        showBackButton: true,
+      ),
       body: Column(
         children: [
           _buildFilterBar(),

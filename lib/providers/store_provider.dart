@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../models/models.dart';
 import '../services/data/storage_service.dart';
+import '../services/api/store_api_service.dart';
 
 class StoreProvider with ChangeNotifier {
   List<PartnerStore> _stores = [];
@@ -32,14 +33,42 @@ class StoreProvider with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     
+    // โหลดจาก local storage ก่อนเสมอ
     try {
-      final storesData = await StorageService.getStores();
-      _stores = storesData.map((store) => PartnerStore.fromJson(store)).toList();
+      final localStores = await StorageService.getStores();
+      _stores = localStores.map((store) => PartnerStore.fromJson(store as Map<String, dynamic>)).toList();
       _filteredStores = List.from(_stores);
-    } catch (e) {
-      debugPrint('Error loading stores: $e');
-      _stores = [];
-      _filteredStores = [];
+      notifyListeners(); // แสดงข้อมูล local ก่อน
+    } catch (localError) {
+      debugPrint('Local storage load failed: $localError');
+    }
+    
+    // จากนั้นพยายามโหลดจาก API
+    try {
+      final apiStores = await StoreApiService.getStores();
+      
+      // รวมข้อมูลจาก API กับ local storage
+      final Map<String, PartnerStore> storeMap = {};
+      
+      // เพิ่มร้านค้าจาก local ก่อน
+      for (var store in _stores) {
+        storeMap[store.id] = store;
+      }
+      
+      // เพิ่มหรืออัปเดตจาก API
+      for (var storeData in apiStores) {
+        final store = PartnerStore.fromJson(storeData);
+        storeMap[store.id] = store;
+        // บันทึกลง local storage
+        await StorageService.addStore(storeData);
+      }
+      
+      _stores = storeMap.values.toList();
+      _filteredStores = List.from(_stores);
+      
+    } catch (apiError) {
+      debugPrint('API load stores failed: $apiError - ใช้ข้อมูล local');
+      // ไม่ต้องทำอะไร เพราะมีข้อมูล local อยู่แล้ว
     }
     
     _isLoading = false;
@@ -47,19 +76,31 @@ class StoreProvider with ChangeNotifier {
   }
 
   void _loadStores() {
-    // ไม่ต้องโหลด demo data แล้ว เพราะจะโหลดจาก API
+    _stores = [];
+    _filteredStores = [];
   }
 
   Future<bool> addStore(PartnerStore store) async {
+    // เพิ่มลง local ทันที
+    _stores.add(store);
+    _filterStores();
+    
+    // บันทึกลง local storage ทันที
     try {
       await StorageService.addStore(store.toJson());
-      _stores.add(store);
-      _filterStores();
-      return true;
-    } catch (e) {
-      debugPrint('Error adding store: $e');
-      return false;
+    } catch (localError) {
+      debugPrint('Local storage failed: $localError');
     }
+    
+    // พยายามส่งไป API ในพื้นหลัง
+    try {
+      await StoreApiService.addStore(store);
+      debugPrint('Store synced to API successfully');
+    } catch (apiError) {
+      debugPrint('API sync failed: $apiError - ร้านค้าถูกบันทึกใน local แล้ว');
+    }
+    
+    return true;
   }
 
   void removeStore(String storeId) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/services.dart';
+import '../services/api/settings_api_service.dart';
 
 
 class SettingsProvider with ChangeNotifier {
@@ -24,12 +25,25 @@ class SettingsProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      _currentLanguage = await LocalizationService.getLanguage();
-      _notificationsEnabled = await NotificationService.areNotificationsEnabled();
-      _pushNotificationsEnabled = await NotificationService.arePushNotificationsEnabled();
-      _emailNotificationsEnabled = await NotificationService.areEmailNotificationsEnabled();
-      _biometricEnabled = await SecurityService.isBiometricEnabled();
-      _twoFactorEnabled = await SecurityService.isTwoFactorEnabled();
+      // Try API first
+      try {
+        final apiSettings = await SettingsApiService.getSettings();
+        _currentLanguage = apiSettings['language'] ?? 'th';
+        _notificationsEnabled = apiSettings['notificationsEnabled'] ?? true;
+        _pushNotificationsEnabled = apiSettings['pushNotificationsEnabled'] ?? true;
+        _emailNotificationsEnabled = apiSettings['emailNotificationsEnabled'] ?? false;
+        _biometricEnabled = apiSettings['biometricEnabled'] ?? false;
+        _twoFactorEnabled = apiSettings['twoFactorEnabled'] ?? false;
+      } catch (apiError) {
+        debugPrint('API load settings failed: $apiError');
+        // Fallback to local services
+        _currentLanguage = await LocalizationService.getLanguage();
+        _notificationsEnabled = await NotificationService.areNotificationsEnabled();
+        _pushNotificationsEnabled = await NotificationService.arePushNotificationsEnabled();
+        _emailNotificationsEnabled = await NotificationService.areEmailNotificationsEnabled();
+        _biometricEnabled = await SecurityService.isBiometricEnabled();
+        _twoFactorEnabled = await SecurityService.isTwoFactorEnabled();
+      }
     } catch (e) {
       debugPrint('Error loading settings: $e');
     } finally {
@@ -40,6 +54,14 @@ class SettingsProvider with ChangeNotifier {
 
   Future<void> setLanguage(String languageCode) async {
     _currentLanguage = languageCode;
+    
+    try {
+      // Try API first
+      await SettingsApiService.updateSettings({'language': languageCode});
+    } catch (apiError) {
+      debugPrint('API update language failed: $apiError');
+    }
+    
     await LocalizationService.setLanguage(languageCode);
     await AnalyticsService.incrementSettingsChange();
 

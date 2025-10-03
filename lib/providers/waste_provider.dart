@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../services/services.dart';
+import '../services/api/waste_api_service.dart';
 
 class WasteProvider with ChangeNotifier {
   List<WasteEntry> _entries = [];
@@ -41,8 +42,20 @@ class WasteProvider with ChangeNotifier {
   Future<void> loadEntries() async {
     setLoading(true);
     try {
-      final entriesData = await StorageService.getWasteEntries();
-      _entries = entriesData.map((data) => WasteEntry.fromJson(data)).toList();
+      // Try API first
+      try {
+        final entriesData = await WasteApiService.getWasteEntries();
+        _entries = entriesData.map((data) => WasteEntry.fromJson(data)).toList();
+        
+        // Save to local storage
+        await StorageService.saveWasteEntries(entriesData);
+      } catch (apiError) {
+        debugPrint('API load waste entries failed: $apiError');
+        // Fallback to local storage
+        final entriesData = await StorageService.getWasteEntries();
+        _entries = entriesData.map((data) => WasteEntry.fromJson(data)).toList();
+      }
+      
       _entries.sort((a, b) => b.date.compareTo(a.date));
     } catch (e) {
       debugPrint('Error loading waste entries: $e');
@@ -53,6 +66,13 @@ class WasteProvider with ChangeNotifier {
   }
 
   Future<void> addEntry(WasteEntry entry) async {
+    try {
+      // Try API first
+      await WasteApiService.addWasteEntry(entry.toJson());
+    } catch (apiError) {
+      debugPrint('API add waste entry failed: $apiError');
+    }
+    
     _entries.insert(0, entry);
     await _saveEntries();
     notifyListeners();

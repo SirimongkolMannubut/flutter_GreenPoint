@@ -11,7 +11,10 @@ class SecuritySettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CommonAppBar(title: 'ความปลอดภัย'),
+      appBar: const CommonAppBar(
+        title: 'ความปลอดภัย',
+        showBackButton: true,
+      ),
       body: Consumer<SettingsProvider>(
         builder: (context, settings, child) {
           return ListView(

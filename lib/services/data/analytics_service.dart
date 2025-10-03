@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../api/analytics_api_service.dart';
 
 class AnalyticsService {
   static const String _userCountKey = 'total_users';
@@ -13,19 +14,46 @@ class AnalyticsService {
   static const String _registrationCountKey = 'registration_count';
 
   static Future<Map<String, dynamic>> getRealTimeStats() async {
-    final prefs = await SharedPreferences.getInstance();
-    
-    return {
-      'totalUsers': prefs.getInt(_userCountKey) ?? 0,
-      'totalPoints': prefs.getInt(_pointsKey) ?? 0,
-      'plasticReduced': prefs.getDouble(_plasticKey) ?? 0.0,
-      'totalActivities': prefs.getInt(_activitiesKey) ?? 0,
-      'qrScans': prefs.getInt(_qrScansKey) ?? 0,
-      'profileUpdates': prefs.getInt(_profileUpdatesKey) ?? 0,
-      'settingsChanges': prefs.getInt(_settingsChangesKey) ?? 0,
-      'loginCount': prefs.getInt(_loginCountKey) ?? 0,
-      'registrationCount': prefs.getInt(_registrationCountKey) ?? 0,
-    };
+    try {
+      // Try API first
+      final apiStats = await AnalyticsApiService.getAnalytics();
+      
+      // Save to local storage
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(_userCountKey, apiStats['totalUsers'] ?? 0);
+      await prefs.setInt(_pointsKey, apiStats['totalPoints'] ?? 0);
+      await prefs.setDouble(_plasticKey, (apiStats['plasticReduced'] ?? 0.0).toDouble());
+      await prefs.setInt(_activitiesKey, apiStats['totalActivities'] ?? 0);
+      await prefs.setInt(_qrScansKey, apiStats['qrScans'] ?? 0);
+      await prefs.setInt(_loginCountKey, apiStats['loginCount'] ?? 0);
+      
+      return {
+        'totalUsers': apiStats['totalUsers'] ?? 0,
+        'totalPoints': apiStats['totalPoints'] ?? 0,
+        'plasticReduced': (apiStats['plasticReduced'] ?? 0.0).toDouble(),
+        'totalActivities': apiStats['totalActivities'] ?? 0,
+        'qrScans': apiStats['qrScans'] ?? 0,
+        'profileUpdates': prefs.getInt(_profileUpdatesKey) ?? 0,
+        'settingsChanges': prefs.getInt(_settingsChangesKey) ?? 0,
+        'loginCount': apiStats['loginCount'] ?? 0,
+        'registrationCount': apiStats['registrationCount'] ?? 0,
+      };
+    } catch (apiError) {
+      // Fallback to local storage
+      final prefs = await SharedPreferences.getInstance();
+      
+      return {
+        'totalUsers': prefs.getInt(_userCountKey) ?? 0,
+        'totalPoints': prefs.getInt(_pointsKey) ?? 0,
+        'plasticReduced': prefs.getDouble(_plasticKey) ?? 0.0,
+        'totalActivities': prefs.getInt(_activitiesKey) ?? 0,
+        'qrScans': prefs.getInt(_qrScansKey) ?? 0,
+        'profileUpdates': prefs.getInt(_profileUpdatesKey) ?? 0,
+        'settingsChanges': prefs.getInt(_settingsChangesKey) ?? 0,
+        'loginCount': prefs.getInt(_loginCountKey) ?? 0,
+        'registrationCount': prefs.getInt(_registrationCountKey) ?? 0,
+      };
+    }
   }
 
   static Future<void> incrementUserCount() async {

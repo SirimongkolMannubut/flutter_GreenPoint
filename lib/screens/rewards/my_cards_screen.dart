@@ -74,7 +74,10 @@ class _MyCardsScreenState extends State<MyCardsScreen> with TickerProviderStateM
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: const CommonAppBar(title: 'การ์ดของฉัน'),
+      appBar: const CommonAppBar(
+        title: 'การ์ดของฉัน',
+        showBackButton: true,
+      ),
       body: Column(
         children: [
           _buildStatsHeader(),

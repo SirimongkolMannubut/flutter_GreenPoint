@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../widgets/widgets.dart';
 import '../../constants/app_constants.dart';
-import '../../services/data/storage_service.dart';
+import '../../providers/providers.dart';
+import '../../models/models.dart';
 
 class UserManagementScreen extends StatefulWidget {
   const UserManagementScreen({super.key});
@@ -14,56 +17,39 @@ class UserManagementScreen extends StatefulWidget {
 class _UserManagementScreenState extends State<UserManagementScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-  List<Map<String, dynamic>> _users = [];
-  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadUsers();
-  }
-
-  Future<void> _loadUsers() async {
-    setState(() {
-      _isLoading = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<AdminProvider>(context, listen: false).loadAllUsers();
     });
-    
-    try {
-      final users = await StorageService.getAllUsers();
-      setState(() {
-        _users = users.map((user) => {
-          ...user,
-          'level': _getUserLevel(user['totalPoints'] ?? 0),
-          'isActive': user['isActive'] ?? true,
-        }).toList();
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('ไม่สามารถโหลดข้อมูลผู้ใช้ได้', style: GoogleFonts.kanit()),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
   }
 
   String _getUserLevel(int points) {
-    if (points >= 2000) return 'Platinum';
-    if (points >= 1000) return 'Gold';
-    if (points >= 500) return 'Silver';
+    if (points >= 2500) return 'Diamond';
+    if (points >= 1000) return 'Platinum';
+    if (points >= 500) return 'Gold';
+    if (points >= 100) return 'Silver';
     return 'Bronze';
   }
 
-  List<Map<String, dynamic>> get filteredUsers {
-    if (_searchQuery.isEmpty) return _users;
-    return _users.where((user) {
-      return user['name'].toLowerCase().contains(_searchQuery.toLowerCase()) ||
-             user['email'].toLowerCase().contains(_searchQuery.toLowerCase());
+  List<User> getFilteredUsers(List<User> users) {
+    if (_searchQuery.isEmpty) return users;
+    return users.where((user) {
+      return user.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+             user.email.toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();
+  }
+
+  void _copyUserId(String userId) {
+    Clipboard.setData(ClipboardData(text: userId));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('คัดลอก User ID แล้ว', style: GoogleFonts.kanit()),
+        backgroundColor: AppConstants.primaryGreen,
+      ),
+    );
   }
 
   @override
@@ -82,7 +68,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _loadUsers,
+            onPressed: () => Provider.of<AdminProvider>(context, listen: false).loadAllUsers(),
           ),
         ],
       ),
@@ -107,123 +93,152 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             ),
           ),
           Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : filteredUsers.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.people_outline,
-                              size: 64,
-                              color: Colors.grey[400],
+            child: Consumer<AdminProvider>(
+              builder: (context, adminProvider, child) {
+                final filteredUsers = getFilteredUsers(adminProvider.allUsers);
+                
+                if (adminProvider.isLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                
+                if (filteredUsers.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.people_outline,
+                          size: 64,
+                          color: Colors.grey[400],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'ไม่พบผู้ใช้งาน',
+                          style: GoogleFonts.kanit(
+                            fontSize: 18,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: filteredUsers.length,
+                  itemBuilder: (context, index) {
+                    final user = filteredUsers[index];
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: AppConstants.primaryGreen,
+                          child: Text(
+                            user.name.substring(0, 1).toUpperCase(),
+                            style: GoogleFonts.kanit(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
                             ),
-                            const SizedBox(height: 16),
+                          ),
+                        ),
+                        title: Text(
+                          user.name,
+                          style: GoogleFonts.kanit(fontWeight: FontWeight.w500),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
                             Text(
-                              'ไม่พบผู้ใช้งาน',
-                              style: GoogleFonts.kanit(
-                                fontSize: 18,
-                                color: Colors.grey[600],
-                              ),
+                              user.email,
+                              style: GoogleFonts.kanit(fontSize: 12),
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: _getLevelColor(_getUserLevel(user.totalPoints)).withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    _getUserLevel(user.totalPoints),
+                                    style: GoogleFonts.kanit(
+                                      fontSize: 10,
+                                      color: _getLevelColor(_getUserLevel(user.totalPoints)),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  '${user.totalPoints} แต้ม',
+                                  style: GoogleFonts.kanit(
+                                    fontSize: 12,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    'ID: ${user.id}',
+                                    style: GoogleFonts.kanit(
+                                      fontSize: 10,
+                                      color: Colors.blue,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: filteredUsers.length,
-                        itemBuilder: (context, index) {
-                          final user = filteredUsers[index];
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 8),
-                            child: ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor: user['isActive'] ? AppConstants.primaryGreen : Colors.grey,
-                                child: Text(
-                                  (user['name'] ?? 'U').substring(0, 1).toUpperCase(),
-                                  style: GoogleFonts.kanit(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              title: Text(
-                                user['name'] ?? 'ไม่ระบุชื่อ',
-                                style: GoogleFonts.kanit(fontWeight: FontWeight.w500),
-                              ),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                        trailing: PopupMenuButton(
+                          itemBuilder: (context) => [
+                            PopupMenuItem(
+                              child: Row(
                                 children: [
-                                  Text(
-                                    user['email'] ?? 'ไม่ระบุอีเมล',
-                                    style: GoogleFonts.kanit(fontSize: 12),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                        decoration: BoxDecoration(
-                                          color: _getLevelColor(user['level']).withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: Text(
-                                          user['level'],
-                                          style: GoogleFonts.kanit(
-                                            fontSize: 10,
-                                            color: _getLevelColor(user['level']),
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        '${user['totalPoints'] ?? 0} แต้ม',
-                                        style: GoogleFonts.kanit(
-                                          fontSize: 12,
-                                          color: Colors.grey[600],
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      if (user['id'] != null)
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                          decoration: BoxDecoration(
-                                            color: Colors.blue.withOpacity(0.1),
-                                            borderRadius: BorderRadius.circular(8),
-                                          ),
-                                          child: Text(
-                                            'ID: ${user['id']}',
-                                            style: GoogleFonts.kanit(
-                                              fontSize: 10,
-                                              color: Colors.blue,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
+                                  const Icon(Icons.visibility, size: 16),
+                                  const SizedBox(width: 8),
+                                  Text('ดูรายละเอียด', style: GoogleFonts.kanit()),
                                 ],
                               ),
-                              trailing: PopupMenuButton(
-                                itemBuilder: (context) => [
-                                  PopupMenuItem(
-                                    child: Row(
-                                      children: [
-                                        const Icon(Icons.visibility, size: 16),
-                                        const SizedBox(width: 8),
-                                        Text('ดูรายละเอียด', style: GoogleFonts.kanit()),
-                                      ],
-                                    ),
-                                    onTap: () => _showUserDetails(user),
-                                  ),
-                                ],
-                              ),
+                              onTap: () => _showUserDetails(user),
                             ),
-                          );
-                        },
+                            PopupMenuItem(
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.copy, size: 16),
+                                  const SizedBox(width: 8),
+                                  Text('คัดลอก User ID', style: GoogleFonts.kanit()),
+                                ],
+                              ),
+                              onTap: () => _copyUserId(user.id),
+                            ),
+                            PopupMenuItem(
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.delete, size: 16, color: Colors.red),
+                                  const SizedBox(width: 8),
+                                  Text('ลบผู้ใช้', style: GoogleFonts.kanit(color: Colors.red)),
+                                ],
+                              ),
+                              onTap: () => _showDeleteUserDialog(user),
+                            ),
+                          ],
+                        ),
                       ),
+                    );
+                  },
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -232,8 +247,10 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
 
   Color _getLevelColor(String level) {
     switch (level) {
-      case 'Platinum':
+      case 'Diamond':
         return Colors.purple;
+      case 'Platinum':
+        return Colors.grey;
       case 'Gold':
         return Colors.orange;
       case 'Silver':
@@ -243,7 +260,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     }
   }
 
-  void _showUserDetails(Map<String, dynamic> user) {
+  void _showUserDetails(User user) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -252,16 +269,13 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildDetailRow('ชื่อ:', user['name'] ?? 'ไม่ระบุ'),
-            _buildDetailRow('อีเมล:', user['email'] ?? 'ไม่ระบุ'),
-            _buildDetailRow('User ID:', user['id'] ?? 'ไม่ระบุ'),
-            _buildDetailRow('แต้ม:', '${user['totalPoints'] ?? 0} แต้ม'),
-            _buildDetailRow('เลเวล:', user['level'] ?? 'Bronze'),
-            _buildDetailRow('พลาสติกที่ลด:', '${user['plasticReduced'] ?? 0} กรัม'),
-            _buildDetailRow('วันที่สมัคร:', user['joinDate'] != null 
-                ? user['joinDate'].toString().substring(0, 10) 
-                : 'ไม่ระบุ'),
-            _buildDetailRow('สถานะ:', user['isActive'] ? 'ใช้งาน' : 'ระงับ'),
+            _buildDetailRow('ชื่อ:', user.name),
+            _buildDetailRow('อีเมล:', user.email),
+            _buildDetailRow('User ID:', user.id),
+            _buildDetailRow('แต้ม:', '${user.totalPoints} แต้ม'),
+            _buildDetailRow('เลเวล:', _getUserLevel(user.totalPoints)),
+            _buildDetailRow('พลาสติกที่ลด:', '${user.plasticReduced} กรัม'),
+            _buildDetailRow('วันที่สมัคร:', user.joinDate.toString().substring(0, 10)),
           ],
         ),
         actions: [
@@ -291,6 +305,46 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             child: Text(value, style: GoogleFonts.kanit()),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showDeleteUserDialog(User user) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('ลบผู้ใช้', style: GoogleFonts.kanit()),
+        content: Text('คุณต้องการลบผู้ใช้ "${user.name}" หรือไม่?', style: GoogleFonts.kanit()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('ยกเลิก', style: GoogleFonts.kanit()),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteUser(user);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: Text('ลบ', style: GoogleFonts.kanit(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _deleteUser(User user) async {
+    final success = await Provider.of<AdminProvider>(context, listen: false).deleteUser(user.id);
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          success 
+            ? 'ลบผู้ใช้ "${user.name}" แล้ว'
+            : 'ไม่สามารถลบผู้ใช้ได้',
+          style: GoogleFonts.kanit()
+        ),
+        backgroundColor: success ? Colors.green : Colors.red,
       ),
     );
   }

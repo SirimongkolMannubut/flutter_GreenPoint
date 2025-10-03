@@ -12,6 +12,7 @@ import '../../constants/app_constants.dart';
 import '../../widgets/widgets.dart';
 import '../settings/settings_screen.dart';
 import 'achievements_screen.dart';
+import '../../services/api/user_api_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -152,19 +153,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
       
       if (image != null) {
-        final appDir = await getApplicationDocumentsDirectory();
-        final fileName = 'profile_${DateTime.now().millisecondsSinceEpoch}.jpg';
-        final savedImage = await File(image.path).copy('${appDir.path}/$fileName');
+        // Try API upload first
+        final imageUrl = await UserApiService.uploadProfileImage(File(image.path));
         
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('profile_image_path', savedImage.path);
-        
-        final userProvider = Provider.of<UserProvider>(context, listen: false);
-        // userProvider.updateProfileImage(savedImage.path);
-        
-        setState(() {
-          _profileImagePath = savedImage.path;
-        });
+        if (imageUrl != null) {
+          // API upload success
+          final userProvider = Provider.of<UserProvider>(context, listen: false);
+          await userProvider.updateProfileImage(imageUrl);
+          
+          setState(() {
+            _profileImagePath = imageUrl;
+          });
+        } else {
+          // Fallback to local storage
+          final appDir = await getApplicationDocumentsDirectory();
+          final fileName = 'profile_${DateTime.now().millisecondsSinceEpoch}.jpg';
+          final savedImage = await File(image.path).copy('${appDir.path}/$fileName');
+          
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('profile_image_path', savedImage.path);
+          
+          final userProvider = Provider.of<UserProvider>(context, listen: false);
+          await userProvider.updateProfileImage(savedImage.path);
+          
+          setState(() {
+            _profileImagePath = savedImage.path;
+          });
+        }
         
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -231,6 +246,71 @@ class _ProfileScreenState extends State<ProfileScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const SettingsScreen()),
+    );
+  }
+
+  Widget _buildProfileImage() {
+    if (_profileImagePath == null) {
+      return Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Colors.white.withOpacity(0.3),
+              Colors.white.withOpacity(0.1),
+            ],
+          ),
+        ),
+        child: const Icon(
+          Icons.person,
+          size: 60,
+          color: Colors.white,
+        ),
+      );
+    }
+
+    if (_profileImagePath!.startsWith('http')) {
+      return Image.network(
+        _profileImagePath!,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.white.withOpacity(0.3),
+                Colors.white.withOpacity(0.1),
+              ],
+            ),
+          ),
+          child: const Icon(
+            Icons.person,
+            size: 60,
+            color: Colors.white,
+          ),
+        ),
+      );
+    }
+
+    if (File(_profileImagePath!).existsSync()) {
+      return Image.file(
+        File(_profileImagePath!),
+        fit: BoxFit.cover,
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.white.withOpacity(0.3),
+            Colors.white.withOpacity(0.1),
+          ],
+        ),
+      ),
+      child: const Icon(
+        Icons.person,
+        size: 60,
+        color: Colors.white,
+      ),
     );
   }
 
@@ -305,26 +385,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
                 child: ClipOval(
-                  child: (_profileImagePath != null && File(_profileImagePath!).existsSync())
-                      ? Image.file(
-                          File(_profileImagePath!),
-                          fit: BoxFit.cover,
-                        )
-                      : Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.white.withOpacity(0.3),
-                                Colors.white.withOpacity(0.1),
-                              ],
-                            ),
-                          ),
-                          child: const Icon(
-                            Icons.person,
-                            size: 60,
-                            color: Colors.white,
-                          ),
-                        ),
+                  child: _buildProfileImage(),
                 ),
               ),
               Positioned(

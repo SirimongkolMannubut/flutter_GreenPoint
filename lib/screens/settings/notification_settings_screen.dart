@@ -11,7 +11,10 @@ class NotificationSettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CommonAppBar(title: 'การแจ้งเตือน'),
+      appBar: const CommonAppBar(
+        title: 'การแจ้งเตือน',
+        showBackButton: true,
+      ),
       body: Consumer<SettingsProvider>(
         builder: (context, settings, child) {
           return ListView(

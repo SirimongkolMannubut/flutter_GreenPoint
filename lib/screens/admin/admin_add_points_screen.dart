@@ -157,7 +157,10 @@ class _AdminAddPointsScreenState extends State<AdminAddPointsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: const CommonAppBar(title: 'เพิ่มแต้มให้ผู้ใช้'),
+      appBar: const CommonAppBar(
+        title: 'เพิ่มแต้มให้ผู้ใช้',
+        showBackButton: true,
+      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(

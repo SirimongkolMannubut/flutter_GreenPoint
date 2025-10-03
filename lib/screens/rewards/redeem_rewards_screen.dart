@@ -21,7 +21,10 @@ class _RedeemRewardsScreenState extends State<RedeemRewardsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: const CommonAppBar(title: 'แลกของรางวัล'),
+      appBar: const CommonAppBar(
+        title: 'แลกของรางวัล',
+        showBackButton: true,
+      ),
       body: Consumer<UserProvider>(
         builder: (context, UserProvider, child) {
           return Column(

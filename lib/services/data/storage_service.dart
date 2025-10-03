@@ -165,6 +165,19 @@ class StorageService {
     }
   }
 
+  static Future<bool> deleteUser(String userId) async {
+    try {
+      final allUsers = await getAllUsers();
+      allUsers.removeWhere((user) => user['id'] == userId);
+      final prefs = await SharedPreferences.getInstance();
+      final usersJson = json.encode(allUsers);
+      return await prefs.setString(_usersKey, usersJson);
+    } catch (e) {
+      print('Error deleting user: $e');
+      return false;
+    }
+  }
+
   static Future<List<dynamic>> getStores() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -196,10 +209,26 @@ class StorageService {
   static Future<bool> addStore(dynamic store) async {
     try {
       final stores = await getStores();
-      stores.add(store);
+      
+      // ตรวจสอบว่ามีร้านนี้อยู่แล้วหรือไม่
+      final existingIndex = stores.indexWhere((s) => s['id'] == store['id']);
+      if (existingIndex != -1) {
+        // อัปเดตร้านที่มีอยู่แล้ว
+        stores[existingIndex] = store;
+      } else {
+        // เพิ่มร้านใหม่
+        stores.add(store);
+      }
+      
       final prefs = await SharedPreferences.getInstance();
       final storesJson = json.encode(stores);
-      return await prefs.setString('stores_data', storesJson);
+      final success = await prefs.setString('stores_data', storesJson);
+      
+      if (success) {
+        print('Store saved successfully: ${store['name']}');
+      }
+      
+      return success;
     } catch (e) {
       print('Error adding store: $e');
       return false;
@@ -239,6 +268,16 @@ class StorageService {
         'longitude': 100.5118,
       },
     ];
+  }
+
+  static Future<bool> clearStores() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return await prefs.remove('stores_data');
+    } catch (e) {
+      print('Error clearing stores: $e');
+      return false;
+    }
   }
 
   static Future<bool> clearAll() async {

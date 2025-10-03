@@ -32,7 +32,10 @@ class _FeatureUsageScreenState extends State<FeatureUsageScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CommonAppBar(title: 'การใช้งานฟีเจอร์'),
+      appBar: const CommonAppBar(
+        title: 'การใช้งานฟีเจอร์',
+        showBackButton: true,
+      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(

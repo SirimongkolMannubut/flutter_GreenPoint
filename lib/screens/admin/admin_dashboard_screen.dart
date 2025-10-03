@@ -151,11 +151,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   ),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: _buildStatCard(
-                      'แต้มรวม',
-                      '${_stats['totalPoints']}',
-                      Icons.stars,
-                      Colors.orange,
+                    child: Consumer<AdminProvider>(
+                      builder: (context, adminProvider, child) {
+                        final totalPoints = adminProvider.allUsers.fold<int>(
+                          0, (sum, user) => sum + user.totalPoints,
+                        );
+                        return _buildStatCard(
+                          'แต้มรวมทั้งหมด',
+                          '$totalPoints',
+                          Icons.stars,
+                          Colors.orange,
+                        );
+                      },
                     ),
                   ),
                 ],

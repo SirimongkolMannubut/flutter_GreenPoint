@@ -34,6 +34,11 @@ dependencies:
   # Google Sign-In (standalone)
   google_sign_in: ^6.2.1
   
+  # Location services
+
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.1
+  
 
 
 
@@ -55,3 +60,4 @@ flutter_intl:
   main_locale: th
   arb_dir: lib/l10n
   output_dir: lib/generated
+  webview_flutter: ^4.4.2
