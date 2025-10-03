@@ -84,6 +84,7 @@ class StoreProvider with ChangeNotifier {
     // เพิ่มลง local ทันที
     _stores.add(store);
     _filterStores();
+    notifyListeners(); // แจ้งให้ UI อัปเดต
     
     // บันทึกลง local storage ทันที
     try {

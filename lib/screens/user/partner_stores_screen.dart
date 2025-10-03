@@ -661,7 +661,7 @@ class _PartnerStoresScreenState extends State<PartnerStoresScreen> {
   Widget _buildMainMap(StoreProvider storeProvider) {
     return Container(
       margin: const EdgeInsets.all(16),
-      height: 400,
+      height: 200,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.grey[300]!),

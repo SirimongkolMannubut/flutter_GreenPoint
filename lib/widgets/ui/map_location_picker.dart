@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 import 'package:google_fonts/google_fonts.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -26,6 +28,10 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
   LatLng _selectedLocation = LatLng(13.7563, 100.5018);
   String _address = 'กำลังค้นหาที่อยู่...';
   bool _isLoading = false;
+  final TextEditingController _searchController = TextEditingController();
+  List<Map<String, dynamic>> _searchResults = [];
+  bool _showSearchResults = false;
+  double _currentZoom = 15.0;
 
   @override
   void initState() {
@@ -35,6 +41,12 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
       _selectedLocation = widget.initialLocation!;
     }
     _getCurrentLocation();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _getCurrentLocation() async {
@@ -57,7 +69,8 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
             _selectedLocation = LatLng(position.latitude, position.longitude);
             
             if (_controller != null) {
-              _controller!.move(_selectedLocation, 15.0);
+              _currentZoom = 15.0;
+              _controller!.move(_selectedLocation, _currentZoom);
             }
           }
         } catch (e) {
@@ -80,6 +93,47 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
         _address = 'Lat: ${location.latitude.toStringAsFixed(4)}, Lng: ${location.longitude.toStringAsFixed(4)}';
       });
     }
+  }
+
+  Future<void> _searchLocation(String query) async {
+    if (query.isEmpty) {
+      setState(() {
+        _searchResults = [];
+        _showSearchResults = false;
+      });
+      return;
+    }
+
+    try {
+      final url = 'https://nominatim.openstreetmap.org/search?format=json&q=${Uri.encodeComponent(query)}&limit=5&countrycodes=th';
+      final response = await http.get(Uri.parse(url));
+      
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        setState(() {
+          _searchResults = data.map((item) => {
+            'display_name': item['display_name'],
+            'lat': double.parse(item['lat']),
+            'lon': double.parse(item['lon']),
+          }).toList();
+          _showSearchResults = true;
+        });
+      }
+    } catch (e) {
+      debugPrint('Search error: $e');
+    }
+  }
+
+  void _selectSearchResult(Map<String, dynamic> result) {
+    final location = LatLng(result['lat'], result['lon']);
+    setState(() {
+      _selectedLocation = location;
+      _address = result['display_name'];
+      _showSearchResults = false;
+      _searchController.clear();
+    });
+    _currentZoom = 16.0;
+    _controller?.move(location, _currentZoom);
   }
 
   void _onMapTapped(LatLng location) {
@@ -113,7 +167,9 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
             mapController: _controller,
             options: MapOptions(
               initialCenter: _selectedLocation,
-              initialZoom: 15.0,
+              initialZoom: _currentZoom,
+              minZoom: 5.0,
+              maxZoom: 18.0,
               onTap: (tapPosition, point) => _onMapTapped(point),
             ),
             children: [
@@ -136,136 +192,180 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
             ],
           ),
           
+          // Search Bar
           Positioned(
             top: 16,
             left: 16,
             right: 16,
             child: Card(
               elevation: 8,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+              child: Column(
+                children: [
+                  TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'ค้นหาสถานที่...',
+                      hintStyle: GoogleFonts.kanit(),
+                      prefixIcon: const Icon(Icons.search),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() {
+                                  _searchResults = [];
+                                  _showSearchResults = false;
+                                });
+                              },
+                            )
+                          : null,
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.all(16),
+                    ),
+                    style: GoogleFonts.kanit(),
+                    onChanged: (value) {
+                      setState(() {});
+                      _searchLocation(value);
+                    },
+                  ),
+                  if (_showSearchResults && _searchResults.isNotEmpty)
+                    Container(
+                      constraints: const BoxConstraints(maxHeight: 200),
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: _searchResults.length,
+                        itemBuilder: (context, index) {
+                          final result = _searchResults[index];
+                          return ListTile(
+                            leading: const Icon(Icons.location_on),
+                            title: Text(
+                              result['display_name'],
+                              style: GoogleFonts.kanit(fontSize: 14),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            onTap: () => _selectSearchResult(result),
+                          );
+                        },
+                      ),
+                    ),
+                ],
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.store,
-                          color: AppConstants.primaryGreen,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'ตำแหน่งร้านค้า',
-                          style: GoogleFonts.kanit(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _address,
-                      style: GoogleFonts.kanit(
-                        fontSize: 14,
-                        color: Colors.grey[700],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppConstants.primaryGreen.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: AppConstants.primaryGreen.withOpacity(0.3),
-                        ),
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.my_location,
-                                size: 16,
-                                color: AppConstants.primaryGreen,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'พิกัด:',
-                                style: GoogleFonts.kanit(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppConstants.primaryGreen,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  'Lat: ${_selectedLocation.latitude.toStringAsFixed(6)}',
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    color: Colors.grey,
-                                    fontFamily: 'monospace',
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  'Lng: ${_selectedLocation.longitude.toStringAsFixed(6)}',
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    color: Colors.grey,
-                                    fontFamily: 'monospace',
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.blue.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
+            ),
+          ),
+          
+          // Zoom Controls
+          Positioned(
+            right: 16,
+            top: MediaQuery.of(context).size.height * 0.4,
+            child: Column(
+              children: [
+                FloatingActionButton(
+                  mini: true,
+                  heroTag: 'zoom_in',
+                  onPressed: () {
+                    setState(() {
+                      _currentZoom = (_currentZoom + 1).clamp(5.0, 18.0);
+                    });
+                    _controller?.move(_selectedLocation, _currentZoom);
+                  },
+                  backgroundColor: Colors.white,
+                  child: const Icon(Icons.add, color: Colors.black87),
+                ),
+                const SizedBox(height: 8),
+                FloatingActionButton(
+                  mini: true,
+                  heroTag: 'zoom_out',
+                  onPressed: () {
+                    setState(() {
+                      _currentZoom = (_currentZoom - 1).clamp(5.0, 18.0);
+                    });
+                    _controller?.move(_selectedLocation, _currentZoom);
+                  },
+                  backgroundColor: Colors.white,
+                  child: const Icon(Icons.remove, color: Colors.black87),
+                ),
+              ],
+            ),
+          ),
+
+          // Location Info Card
+          if (!_showSearchResults)
+            Positioned(
+              bottom: 100,
+              left: 16,
+              right: 16,
+              child: Card(
+                elevation: 8,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
                         children: [
                           Icon(
-                            Icons.info_outline,
-                            size: 14,
-                            color: Colors.blue[700],
+                            Icons.store,
+                            color: AppConstants.primaryGreen,
+                            size: 20,
                           ),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: 8),
                           Text(
-                            'แตะบนแผนที่เพื่อเปลี่ยนตำแหน่ง',
+                            'ตำแหน่งร้านค้า',
                             style: GoogleFonts.kanit(
-                              fontSize: 11,
-                              color: Colors.blue[700],
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 8),
+                      Text(
+                        _address,
+                        style: GoogleFonts.kanit(
+                          fontSize: 14,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppConstants.primaryGreen.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Lat: ${_selectedLocation.latitude.toStringAsFixed(6)}',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey,
+                                  fontFamily: 'monospace',
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Lng: ${_selectedLocation.longitude.toStringAsFixed(6)}',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey,
+                                  fontFamily: 'monospace',
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
 
           if (_isLoading)
             Container(

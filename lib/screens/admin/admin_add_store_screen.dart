@@ -94,6 +94,9 @@ class _AdminAddStoreScreenState extends State<AdminAddStoreScreen> {
       if (!mounted) return;
       
       if (success) {
+        // รีเฟรชข้อมูลร้านค้า
+        await storeProvider.loadStores();
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('เพิ่มร้านค้าสำเร็จ!', style: GoogleFonts.kanit()),
@@ -111,8 +114,14 @@ class _AdminAddStoreScreenState extends State<AdminAddStoreScreen> {
       }
 
     } catch (e) {
-      setState(() => _isLoading = false);
-      _showError('เกิดข้อผิดพลาด: $e');
+      if (mounted) {
+        setState(() => _isLoading = false);
+        _showError('เกิดข้อผิดพลาด: $e');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
