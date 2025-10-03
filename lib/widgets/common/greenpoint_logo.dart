@@ -19,33 +19,11 @@ class GreenPointLogo extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
+        Image.asset(
+          'assets/images/LogogreenPoint.png',
           width: size,
           height: size,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                AppConstants.primaryGreen,
-                AppConstants.lightGreen,
-              ],
-            ),
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: AppConstants.primaryGreen.withOpacity(0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Center(
-            child: Text(
-              '🌱',
-              style: TextStyle(fontSize: size * 0.6),
-            ),
-          ),
+          fit: BoxFit.contain,
         ),
         if (showText) ...[
           const SizedBox(width: 8),

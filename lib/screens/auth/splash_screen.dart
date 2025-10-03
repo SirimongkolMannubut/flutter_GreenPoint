@@ -71,7 +71,7 @@ class _SplashScreenState extends State<SplashScreen>
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        shape: BoxShape.circle,
+                        borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
                             color: AppConstants.primaryGreen.withOpacity(0.2),
@@ -81,7 +81,7 @@ class _SplashScreenState extends State<SplashScreen>
                         ],
                       ),
                       child: const GreenPointLogo(
-                        size: 80,
+                        size: 120,
                         showText: false,
                       ),
                     ),

@@ -25,7 +25,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: Row(
         children: [
           const GreenPointLogo(
-            size: 32,
+            size: 48,
             showText: true,
             textColor: Colors.white,
           ),

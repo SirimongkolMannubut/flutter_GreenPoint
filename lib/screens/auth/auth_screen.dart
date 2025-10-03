@@ -63,23 +63,9 @@ class _AuthScreenState extends State<AuthScreen> {
   Widget _buildLogo() {
     return Column(
       children: [
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 30,
-                offset: const Offset(0, 15),
-              ),
-            ],
-          ),
-          child: const GreenPointLogo(
-            size: 80,
-            showText: false,
-          ),
+        const GreenPointLogo(
+          size: 200,
+          showText: false,
         ).animate().scale(duration: 800.ms).then().shimmer(duration: 1500.ms),
         const SizedBox(height: 24),
         Text(
@@ -152,7 +138,9 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppConstants.primaryGreen),
+                    borderSide: const BorderSide(
+                      color: AppConstants.primaryGreen,
+                    ),
                   ),
                 ),
                 style: GoogleFonts.kanit(),
@@ -177,7 +165,9 @@ class _AuthScreenState extends State<AuthScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppConstants.primaryGreen),
+                  borderSide: const BorderSide(
+                    color: AppConstants.primaryGreen,
+                  ),
                 ),
               ),
               style: GoogleFonts.kanit(),
@@ -214,7 +204,9 @@ class _AuthScreenState extends State<AuthScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppConstants.primaryGreen),
+                  borderSide: const BorderSide(
+                    color: AppConstants.primaryGreen,
+                  ),
                 ),
               ),
               style: GoogleFonts.kanit(),
@@ -303,10 +295,7 @@ class _AuthScreenState extends State<AuthScreen> {
       },
       child: Text(
         _isLogin ? 'ยังไม่มีบัญชี? สมัครสมาชิก' : 'มีบัญชีแล้ว? เข้าสู่ระบบ',
-        style: GoogleFonts.kanit(
-          color: Colors.white,
-          fontSize: 16,
-        ),
+        style: GoogleFonts.kanit(color: Colors.white, fontSize: 16),
       ),
     );
   }
@@ -316,9 +305,7 @@ class _AuthScreenState extends State<AuthScreen> {
       onPressed: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) => const AdminLoginScreen(),
-          ),
+          MaterialPageRoute(builder: (context) => const AdminLoginScreen()),
         );
       },
       child: Container(
@@ -329,10 +316,7 @@ class _AuthScreenState extends State<AuthScreen> {
         ),
         child: Text(
           '🔐 เข้าสู่ระบบผู้ดูแล',
-          style: GoogleFonts.kanit(
-            color: Colors.white70,
-            fontSize: 14,
-          ),
+          style: GoogleFonts.kanit(color: Colors.white70, fontSize: 14),
         ),
       ),
     );
@@ -415,37 +399,39 @@ class _AuthScreenState extends State<AuthScreen> {
   Future<void> _handleGoogleSignIn() async {
     try {
       _showLoadingDialog('กำลังเข้าสู่ระบบด้วย Google...');
-      
+
       final result = await GoogleAuthService.signInWithGoogle();
-      
+
       if (!mounted) return;
       Navigator.pop(context); // Close loading dialog
-      
+
       if (result == null) {
         _showErrorSnackBar('เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย Google');
         return;
       }
-      
+
       if (result['error'] != null) {
-        _showErrorSnackBar('Google Sign-In Error: ${result['error']} - ${result['message']}');
+        _showErrorSnackBar(
+          'Google Sign-In Error: ${result['error']} - ${result['message']}',
+        );
         return;
       }
-      
+
       if (result['cancelled'] == true) {
         return;
       }
-      
+
       if (mounted) {
         // ใช้ UserProvider สำหรับ Google Sign-In
         final userProvider = context.read<UserProvider>();
-        
+
         // เข้าสู่ระบบด้วย Google data
         final success = await userProvider.loginWithGoogle(
           result['name'] ?? 'Google User',
           result['email'] ?? '',
           result['id'] ?? '',
         );
-        
+
         if (success) {
           _showSuccessSnackBar('เข้าสู่ระบบด้วย Google สำเร็จ!');
           Navigator.pushReplacement(
@@ -473,12 +459,7 @@ class _AuthScreenState extends State<AuthScreen> {
           children: [
             const CircularProgressIndicator(),
             const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                message,
-                style: GoogleFonts.kanit(),
-              ),
-            ),
+            Expanded(child: Text(message, style: GoogleFonts.kanit())),
           ],
         ),
       ),
