@@ -44,54 +44,6 @@ Authentication System
 ประวัติการใช้งาน
 สถิติการลดขยะ
 
-
-
-🏗️ โครงสร้างโปรเจ็กต์
-lib/
-├── components/          # UI Components ที่ใช้ซ้ำ
-│   ├── point_card.dart      # แสดงยอดแต้ม
-│   ├── reward_card.dart     # การ์ดรางวัล
-│   └── store_card.dart      # การ์ดร้านค้า
-├── controllers/         # State Management Controllers
-│   ├── auth_controller.dart      # จัดการ Authentication
-│   ├── point_controller.dart     # จัดการแต้มสะสม
-│   ├── reward_controller.dart    # จัดการรางวัล
-│   └── map_controller.dart       # จัดการแผนที่
-├── models/              # Data Models
-│   ├── user_model.dart
-│   ├── point_model.dart
-│   ├── reward_model.dart
-│   └── store_model.dart
-├── routes/              # การจัดการ Routes
-│   ├── app_pages.dart       # กำหนด Pages และ Bindings
-│   └── app_routes.dart      # กำหนดชื่อ Routes
-├── screens/             # หน้าจอต่างๆ
-│   ├── splash_screen.dart
-│   ├── login_screen.dart
-│   ├── home_screen.dart
-│   ├── points/
-│   │   ├── points_screen.dart
-│   │   └── points_history_screen.dart
-│   ├── rewards/
-│   │   ├── rewards_screen.dart
-│   │   ├── reward_detail_screen.dart
-│   │   └── my_rewards_screen.dart
-│   ├── map/
-│   │   ├── map_screen.dart
-│   │   └── store_detail_screen.dart
-│   └── profile/
-│       ├── profile_screen.dart
-│       └── statistics_screen.dart
-├── services/            # Services สำหรับการจัดการข้อมูล
-│   ├── api_service.dart         # API Service
-│   ├── auth_service.dart        # Google Auth Service
-│   ├── storage_service.dart     # Local Storage Service
-│   └── location_service.dart    # Location Service
-├── utils/               # Utilities และ Helpers
-│   ├── api.dart             # API Configuration
-│   ├── constants.dart       # Constants
-│   └── helpers.dart         # Helper Functions
-└── main.dart            # Entry Point
 🛠️ เทคโนโลยีที่ใช้
 Dependencies หลัก
 
