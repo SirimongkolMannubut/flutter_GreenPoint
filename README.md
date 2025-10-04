@@ -255,3 +255,48 @@ Flutter Team - Framework
 📞 การติดต่อและสนับสนุน
 หากมีคำถามหรือปัญหาในการใช้งาน สามารถสร้าง Issue ในโปรเจ็กต์นี้ได้
 Together, Let's Make Earth Greener! 🌍💚
+
+
+📱 ภาพประกอบภายในแอป
+<div align="center">
+🎯 คุณสมบัติหลัก
+<table>
+  <tr>
+    <td align="center" width="14.28%">
+      <img src="https://github.com/user-attachments/assets/6061a230-bef1-442b-a4d1-47eee1f1c4c9" width="100%" alt="หน้าล็อกอิน"/>
+      <br/>
+      <sub><b>หน้าล็อกอิน</b></sub>
+    </td>
+    <td align="center" width="14.28%">
+      <img src="https://github.com/user-attachments/assets/b35f4ae1-4cbd-4e33-9b5f-9a710e04fa58" width="100%" alt="หน้าสมัครสมาชิก"/>
+      <br/>
+      <sub><b>หน้าสมัครสมาชิก</b></sub>
+    </td>
+    <td align="center" width="14.28%">
+      <img src="https://github.com/user-attachments/assets/963cbf56-748a-4dbb-a8f2-7a1e5bb6667d" width="100%" alt="หน้าหลัก"/>
+      <br/>
+      <sub><b>หน้าหลัก</b></sub>
+    </td>
+    <td align="center" width="14.28%">
+      <img src="https://github.com/user-attachments/assets/04e72bab-0c10-4ee4-b024-7a5111249282" width="100%" alt="โปรไฟล์"/>
+      <br/>
+      <sub><b>หน้าร้านค้า</b></sub>
+    </td>
+    <td align="center" width="14.28%">
+      <img src="https://github.com/user-attachments/assets/9ebae26f-86d9-487e-b2ca-3e7d94a7ee2e" width="100%" alt="เมนู"/>
+      <br/>
+      <sub><b>หน้าของรางวัล</b></sub>
+    </td>
+    <td align="center" width="14.28%">
+      <img src="https://github.com/user-attachments/assets/5d4e793e-0919-4663-b275-ed5da0f6ba8f" width="100%" alt="รายละเอียด"/>
+      <br/>
+      <sub><b>หน้าโปรไฟล์</b></sub>
+    </td>
+    <td align="center" width="14.28%">
+      <img src="https://github.com/user-attachments/assets/bd696c95-8b31-4a13-8f68-c4cc4027fadb" width="100%" alt="การตั้งค่า"/>
+      <br/>
+      <sub><b>ความสำเร็จ</b></sub>
+    </td>
+  </tr>
+</table>
+</div>
